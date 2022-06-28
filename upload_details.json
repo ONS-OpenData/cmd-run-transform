@@ -1,0 +1,26 @@
+{
+  "index-private-housing-rental-prices": {
+    "edition": "time-series",
+    "collection_name": "CMD index of private housing rental prices"
+    },
+  "uk-spending-on-cards": {
+    "edition": "time-series",
+    "collection_name": "CMD uk spending on cards"
+    },
+  "weekly-deaths-health-board": {
+    "edition": "2022",
+    "collection_name": "CMD weekly deaths by health board"
+    },
+  "weekly-deaths-age-sex": {
+    "edition": "covid-19",
+    "collection_name": "weekly deaths by age and sex"
+    },
+  "weekly-deaths-region": {
+    "edition": "covid-19",
+    "collection_name": "weekly deaths by region"
+    },
+  "weekly-deaths-local-authority": {
+    "edition": "2022",
+    "collection_name": "weekly deaths by local authority"
+    }
+}
