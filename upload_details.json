@@ -13,14 +13,14 @@
     },
   "weekly-deaths-age-sex": {
     "edition": "covid-19",
-    "collection_name": "weekly deaths by age and sex"
+    "collection_name": "CMD weekly deaths by age and sex"
     },
   "weekly-deaths-region": {
     "edition": "covid-19",
-    "collection_name": "weekly deaths by region"
+    "collection_name": "CMD weekly deaths by region"
     },
   "weekly-deaths-local-authority": {
     "edition": "2022",
-    "collection_name": "weekly deaths by local authority"
+    "collection_name": "CMD weekly deaths by local authority"
     }
 }
