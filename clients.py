@@ -1,4 +1,4 @@
-import requests, os, glob, sys, json, datetime, time
+import requests, os, glob, sys, json, datetime, time, platform
 
 
 TRANSFORM_URL = "https://raw.github.com/ONS-OpenData/cmd-transforms/master"
@@ -33,6 +33,14 @@ class Transform:
             source_files = [file for file in source_files if '__' not in file] # ignoring pycache
             source_files = [file for file in source_files if '.json' not in file] # ignoring json 
         self.source_files = source_files
+
+        system_type = platform.system()
+        # verify=False if on windows - hack for if using network machine
+        if system_type == "Windows":
+            self.verify = False
+            requests.packages.urllib3.disable_warnings() # disables the insure request warnings
+        else:
+            self.verify = True
         
         self.transform_url = f"{TRANSFORM_URL}/{self.dataset}/main.py"
         self.requirements_url = f"{TRANSFORM_URL}/{self.dataset}/requirements.txt"
@@ -42,9 +50,9 @@ class Transform:
         
     def _write_transform(self):
         # getting transform script
-        r = requests.get(self.transform_url)
+        r = requests.get(self.transform_url, verify=self.verify)
         if r.status_code == 404:
-            raise Exception(f"{self.transform_url} raised a 404 error, does the transform exist for {self.dataset} on github")
+            raise Exception(f"{self.transform_url} raised a 404 error, does the transform exist for '{self.dataset}' on github")
         elif r.status_code != 200:
             raise Exception(f"{self.transform_url} raised a {r.status_code} error")
         
@@ -57,14 +65,14 @@ class Transform:
             
             
         # getting any requirements
-        r = requests.get(self.requirements_url)
+        r = requests.get(self.requirements_url, verify=self.verify)
         if r.status_code == 200:
             requirements = r.text
             requirements = requirements.strip().split("\n")
     
             for module in requirements:
                 module_url = f"{TRANSFORM_URL}/modules/{module}/module.py"
-                module_r = requests.get(module_url)
+                module_r = requests.get(module_url, verify=self.verify)
                 if module_r.status_code != 200:
                     raise Exception(f"{module_url} raised a {module_r.status_code} error")
     
@@ -103,8 +111,7 @@ class Transform:
         
         # import transform
         sys.path.append(f"{self.location}")
-        #module_import = self.transform_script
-        #print(module_import)
+        print(f"Running transform on: {self.dataset}")
         from temp_transform_script import transform
         # catch any errors in the transform
         try:
@@ -135,7 +142,15 @@ class Base:
             credentials = "florence-details.json"
             if not os.path.exists(credentials):
                 raise Exception("No credentials file was given or could be found in working directory")
-        
+
+        system_type = platform.system()
+        # verify=False if on windows - hack for if using network machine
+        if system_type == "Windows":
+            self.verify = False
+            #requests.packages.urllib3.disable_warnings() # disables the insure request warnings
+        else:
+            self.verify = True
+            
         # assigning given variables
         self.credentials = credentials
         
@@ -158,7 +173,7 @@ class Base:
             password = credentials_json['password']
             login = {"email":email, "password":password}
             
-            r = requests.post(login_url, json=login)
+            r = requests.post(login_url, json=login, verify=self.verify)
             if r.status_code == 200:
                 access_token = r.text.strip('"')
                 self.access_token = access_token
@@ -191,15 +206,15 @@ class MetadataClient:
         Pulls latest csvw
         """
         editions_url = f"https://api.beta.ons.gov.uk/v1/datasets/{dataset_id}/editions/{edition}/versions"
-        items = requests.get(f"{editions_url}?limit=1000").json()['items']
+        items = requests.get(f"{editions_url}?limit=1000", verify=self.verify).json()['items']
         # get latest version number
         latest_version_number = items[0]['version']
         assert latest_version_number == len(items), f'Get_Latest_Version for /{dataset_id}/editions/{edition} - number of versions does not match latest version number'
         # get latest version URL
         url = f"{editions_url}/{str(latest_version_number)}"
         # get latest version data
-        latest_version = requests.get(url).json()
-        csvw_response = requests.get(latest_version['downloads']['csvw']['href'])
+        latest_version = requests.get(url, verify=self.verify).json()
+        csvw_response = requests.get(latest_version['downloads']['csvw']['href'], verify=self.verify)
         if csvw_response.status_code != 200:
             return f"csvw download failed with a {csvw_response.status_code} error"
         self.csvw_dict = json.loads(csvw_response.text)
@@ -321,7 +336,7 @@ class CollectionClient(Base):
 
     def create_collection(self):
         for dataset_id in self.upload_dict.keys():
-            requests.post(self.collection_url, headers=self.headers, json={"name": self.upload_dict[dataset_id]['collection_name']})
+            requests.post(self.collection_url, headers=self.headers, json={"name": self.upload_dict[dataset_id]['collection_name']}, verify=self.verify)
             # does not return a 200, so check the collection was created, which
             # also finds the collection_id
             self._check_collection_exists(dataset_id)
@@ -337,7 +352,7 @@ class CollectionClient(Base):
     def _check_collection_exists(self, dataset_id):
         # TODO - check to make sure collection is empty
         self._get_collection_id(dataset_id)
-        r = requests.get(f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}")
+        r = requests.get(f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}", headers=self.headers, verify=self.verify)
         if r.status_code != 200:
             raise Exception(f"Collection '{self.upload_dict[dataset_id]['collection_name']}' not created - returned a {r.status_code} error")
     
@@ -357,7 +372,7 @@ class CollectionClient(Base):
             if self.all_collections:
                 pass
         except:
-            r = requests.get(f"{self.collection_url}s", headers=self.headers)
+            r = requests.get(f"{self.collection_url}s", headers=self.headers, verify=self.verify)
             collection_list = r.json()
             self.all_collections = collection_list
 
@@ -367,7 +382,8 @@ class CollectionClient(Base):
         r = requests.put(
             f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}", 
             headers=self.headers, 
-            json={"state": "Complete"}
+            json={"state": "Complete"},
+            verify=self.verify
             )
 
         if r.status_code == 200:
@@ -381,7 +397,8 @@ class CollectionClient(Base):
         r = requests.put(
             f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}",
             headers=self.headers,
-            json={"state": "Complete"}
+            json={"state": "Complete"},
+            verify=self.verify
         )
 
         if r.status_code == 200:
@@ -405,7 +422,7 @@ class RecipeClient(Base):
         if self.all_recipes:
             return self.all_recipes
 
-        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers)
+        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=self.verify)
 
         if r.status_code == 200:
             self.all_recipes = r.json()
@@ -485,13 +502,13 @@ class DatasetClient(Base, MetadataClient):
         """
         dataset_jobs_api_url = f"{self.dataset_url}/jobs"
 
-        r = requests.get(dataset_jobs_api_url, headers=self.headers)
+        r = requests.get(dataset_jobs_api_url, headers=self.headers, verify=self.verify)
         if r.status_code == 200:
             whole_dict = r.json()
             total_count = whole_dict["total_count"]
             last_job_number = total_count - 1 # 0 indexing
             new_url = f"{dataset_jobs_api_url}?limit=1&offset={last_job_number}"
-            new_dict = requests.get(new_url, headers=self.headers).json()
+            new_dict = requests.get(new_url, headers=self.headers, verify=self.verify).json()
             self.lastest_job = new_dict['items'][0]
         else:
             raise Exception(
@@ -517,7 +534,7 @@ class DatasetClient(Base, MetadataClient):
             if self.upload_dict[dataset_id]['recipe_id']:
                 pass
         except:
-            r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers)
+            r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=self.verify)
 
             if r.status_code == 200:
                 all_recipes = r.json()
@@ -564,7 +581,7 @@ class DatasetClient(Base, MetadataClient):
                 ],
             }
     
-            r = requests.post(f"{self.dataset_url}/jobs", headers=self.headers, json=payload)
+            r = requests.post(f"{self.dataset_url}/jobs", headers=self.headers, json=payload, verify=self.verify)
             if r.status_code == 201:
                 print("Job created successfully")
             else:
@@ -586,7 +603,7 @@ class DatasetClient(Base, MetadataClient):
     def _get_job_info(self, dataset_id):
         dataset_jobs_id_url = f"{self.dataset_url}/jobs/{self.upload_dict[dataset_id]['job_id']}"
 
-        r = requests.get(dataset_jobs_id_url, headers=self.headers)
+        r = requests.get(dataset_jobs_id_url, headers=self.headers, verify=self.verify)
         if r.status_code == 200:
             self.job_info_dict = r.json()
         else:
@@ -612,6 +629,7 @@ class DatasetClient(Base, MetadataClient):
                 updating_state_of_job_url,
                 headers=self.headers,
                 json=updating_state_of_job_json,
+                verify=self.verify
             )
             if r.status_code != 200:
                 raise Exception(f"Unable to update job for {dataset_id} to submitted state")
@@ -634,7 +652,7 @@ class DatasetClient(Base, MetadataClient):
         """
         instance_id_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_id_url, headers=self.headers)
+        r = requests.get(instance_id_url, headers=self.headers, verify=self.verify)
         if r.status_code != 200:
             raise Exception(
                 f"{instance_id_url} raised a {r.status_code} error"
@@ -678,7 +696,7 @@ class DatasetClient(Base, MetadataClient):
 
         dataset_url = f"{self.dataset_url}/datasets/{dataset_id}"
         
-        r = requests.put(dataset_url, headers=self.headers, json=metadata)
+        r = requests.put(dataset_url, headers=self.headers, json=metadata, verify=self.verify)
         if r.status_code != 200:
             print(f"Metadata not updated, returned a {r.status_code} error")
         else:
@@ -701,7 +719,7 @@ class DatasetClient(Base, MetadataClient):
             'edition':self.upload_dict[dataset_id]['edition'], 
             'state':'edition-confirmed', 
             'release_date':release_date
-            }
+            }, verify=self.verify
         )
 
         if r.status_code == 200:
@@ -720,7 +738,7 @@ class DatasetClient(Base, MetadataClient):
 
         instance_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_url, headers=self.headers)
+        r = requests.get(instance_url, headers=self.headers, verify=self.verify)
         if r.status_code != 200:
             raise Exception(f"/datasets/{dataset_id}/instances/{self.upload_dict[dataset_id]['instance_id']} returned a {r.status_code} error")
             
@@ -749,7 +767,7 @@ class DatasetClient(Base, MetadataClient):
             
             # making the request for each dimension separately
             dimension_url = f"{instance_url}/dimensions/{dimension}"
-            r = requests.put(dimension_url, headers=self.headers, json=new_dimension_info)
+            r = requests.put(dimension_url, headers=self.headers, json=new_dimension_info, verify=self.verify)
             
             if r.status_code != 200:
                 print(f"Dimension info not updated for {dimension}, returned a {r.status_code} error")
@@ -779,7 +797,7 @@ class DatasetClient(Base, MetadataClient):
         
         version_url = f"{self.dataset_url}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}"
         
-        r = requests.put(version_url, headers=self.headers, json=usage_notes_to_add)
+        r = requests.put(version_url, headers=self.headers, json=usage_notes_to_add, verify=self.verify)
         if r.status_code == 200:
             print('Usage notes added')
         else:
@@ -833,7 +851,7 @@ class UploadClient(Base):
                 }
                 
                 # making the POST request
-                r = requests.post(self.upload_url, headers=self.headers, params=params, files=files)
+                r = requests.post(self.upload_url, headers=self.headers, params=params, files=files, verify=self.verify)
                 if r.status_code != 200:  
                     raise Exception(f"{self.upload_url} returned error {r.status_code}")
                     
@@ -855,6 +873,8 @@ class UploadClient(Base):
         chunk_size = 5 * 1024 * 1024 #standard
         file_number = 1
         location = "/".join(v4.split("/")[:-1]) + "/"
+        if location == "/": 
+            location = ""
         temp_files = []
         with open(v4, 'rb') as f:
             chunk = f.read(chunk_size)
