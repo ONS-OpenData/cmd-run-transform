@@ -3,10 +3,6 @@
     "edition": "time-series",
     "collection_name": "CMD index of private housing rental prices"
     },
-  "uk-spending-on-cards": {
-    "edition": "time-series",
-    "collection_name": "CMD uk spending on cards"
-    },
   "weekly-deaths-health-board": {
     "edition": "2022",
     "collection_name": "CMD weekly deaths by health board"
@@ -22,5 +18,25 @@
   "weekly-deaths-local-authority": {
     "edition": "2022",
     "collection_name": "CMD weekly deaths by local authority"
-    }
+    },
+  "cpih01": {
+    "edition": "time-series",
+    "collection_name": "CMD cpih"
+  },
+  "output-in-the-construction-industry": {
+    "edition": "time-series",
+    "collection_name": "CMD output in the construction industry"
+  },
+  "uk-spending-on-cards": {
+    "edition": "time-series",
+    "collection_name": "CMD uk spending on cards"
+  },
+  "traffic-camera-activity": {
+    "edition": "time-series",
+    "collection_name": "CMD traffic camera activity"
+  },
+  "gdp-to-four-decimal-places": {
+    "edition": "time-series",
+    "collection_name": "CMD gdp to four decimal places"
+  }
 }
