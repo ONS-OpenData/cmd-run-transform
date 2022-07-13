@@ -38,5 +38,9 @@
   "gdp-to-four-decimal-places": {
     "edition": "time-series",
     "collection_name": "CMD gdp to four decimal places"
+  },
+  "trade": {
+    "edition": "time-series",
+    "collection_name": "CMD trade"
   }
 }
