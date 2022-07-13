@@ -1,46 +1,58 @@
 {
-  "index-private-housing-rental-prices": {
-    "edition": "time-series",
-    "collection_name": "CMD index of private housing rental prices"
-    },
-  "weekly-deaths-health-board": {
-    "edition": "2022",
-    "collection_name": "CMD weekly deaths by health board"
-    },
-  "weekly-deaths-age-sex": {
-    "edition": "covid-19",
-    "collection_name": "CMD weekly deaths by age and sex"
-    },
-  "weekly-deaths-region": {
-    "edition": "covid-19",
-    "collection_name": "CMD weekly deaths by region"
-    },
-  "weekly-deaths-local-authority": {
-    "edition": "2022",
-    "collection_name": "CMD weekly deaths by local authority"
-    },
-  "cpih01": {
-    "edition": "time-series",
-    "collection_name": "CMD cpih"
-  },
   "output-in-the-construction-industry": {
     "edition": "time-series",
     "collection_name": "CMD output in the construction industry"
   },
-  "uk-spending-on-cards": {
+  "cpih01": {
     "edition": "time-series",
-    "collection_name": "CMD uk spending on cards"
-  },
-  "traffic-camera-activity": {
-    "edition": "time-series",
-    "collection_name": "CMD traffic camera activity"
+    "collection_name": "CMD cpih"
   },
   "gdp-to-four-decimal-places": {
     "edition": "time-series",
     "collection_name": "CMD gdp to four decimal places"
   },
+  "index-private-housing-rental-prices": {
+    "edition": "time-series",
+    "collection_name": "CMD index of private housing rental prices"
+  },
+  "online-job-advert-estimates": {
+    "edition": "feb-2020-index-by-category",
+    "collection_name": "CMD online jobs"
+  },
+  "faster-indicators-shipping-data": {
+    "edition": "time-series",
+    "collection_name": "CMD shipping data"
+  },
+  "suicides-in-the-uk": {
+    "edition": "2021",
+    "collection_name": "CMD suicides"
+  },
   "trade": {
     "edition": "time-series",
     "collection_name": "CMD trade"
+  },
+  "traffic-camera-activity": {
+    "edition": "time-series",
+    "collection_name": "CMD traffic camera activity"
+  },
+  "uk-spending-on-cards": {
+    "edition": "time-series",
+    "collection_name": "CMD uk spending on cards"
+  },
+  "weekly-deaths-health-board": {
+    "edition": "2022",
+    "collection_name": "CMD weekly deaths by health board"
+  },
+  "weekly-deaths-age-sex": {
+    "edition": "covid-19",
+    "collection_name": "CMD weekly deaths by age and sex"
+  },
+  "weekly-deaths-region": {
+    "edition": "covid-19",
+    "collection_name": "CMD weekly deaths by region"
+  },
+  "weekly-deaths-local-authority": {
+    "edition": "2022",
+    "collection_name": "CMD weekly deaths by local authority"
   }
 }
