@@ -32,6 +32,6 @@ upload_dict = UploadDetails(transform.transform_output, location=location).creat
 
 # uploading data
 if 'upload' in kwargs.keys():
-    if kwargs['upload'] == True:
+    if str(kwargs['upload']).lower() == 'true':
         upload = UploadToCmd(upload_dict, credentials=credentials)
         upload.run_upload()
