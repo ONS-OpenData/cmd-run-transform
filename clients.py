@@ -1,4 +1,5 @@
-import requests, os, glob, sys, json, datetime, time, platform
+import requests, os, glob, sys, json, datetime, time, platform, zipfile
+from bs4 import BeautifulSoup
 
 
 TRANSFORM_URL = "https://raw.github.com/ONS-OpenData/cmd-transforms/master"
@@ -122,8 +123,118 @@ class Transform:
             raise Exception(e)
         # del scripts
         self._del_transform()
+
+
+class SourceData:
+    def __init__(self, dataset, **kwargs):
+        if 'location' in kwargs.keys() and kwargs['location'] != '':
+            location = kwargs['location']
+            if not location.endswith('/'):
+                location += '/'
+        else:
+            location = ''
+        self.location = location
         
+        self.landing_page_json = f"{self.location}landing_pages.json"
+        # get landing pages from landing_pages.json
+        with open(self.landing_page_json) as f:
+            self.page_details = json.load(f)
+        
+        self.dataset = dataset
+        self.ons_landing_page = "https://www.ons.gov.uk"
+        
+        # get todays date
+        todays_date = datetime.datetime.now()
+        #self.todays_date = datetime.datetime.strftime(todays_date, "%d %B %Y")
+        self.todays_date = "13 July 2022"
+        
+        system_type = platform.system()
+        # verify=False if on windows - hack for if using network machine
+        if system_type == "Windows":
+            self.verify = False
+            requests.packages.urllib3.disable_warnings() # disables the insure request warnings
+        else:
+            self.verify = True
+
+        self.downloaded_files = []
+        
+        
+    def get_source_files(self):
+        if self.dataset not in self.page_details.keys():
+            print(f"no landing page available for {self.dataset}, will use files from current directory")
+            return ""
             
+        # downloads and writes source files to 'location'
+        assert self.dataset in self.page_details.keys(), f"{self.dataset} is not in {self.landing_page_json}, landing page is unknown"
+        
+        self.landing_pages = self.page_details[self.dataset]["pages"]
+        
+        for page in self.landing_pages:
+            self._download(page)
+
+        return self.downloaded_files
+        
+        
+    def _download(self, page):
+        results = self._check_release_date(page)
+        
+        # get link
+        elements = results.find_all("div", class_="inline-block--md margin-bottom-sm--1")
+        element = elements[0] # latest comes first
+        
+        link = str(element).split("href=")[-1].split(">")[0].strip('"')
+        download_link = f"{self.ons_landing_page}{link}"
+        
+        # download the file
+        source_file = download_link.split('/')[-1]
+        r = requests.get(download_link, verify=self.verify)
+        with open(f"{self.location}{source_file}", 'wb') as output:
+            output.write(r.content)
+        print(f"written {source_file}")
+            
+        # unzip if needed
+        if source_file.endswith(".zip"):
+            with zipfile.ZipFile(f"{self.location}{source_file}", 'r') as zip_ref:
+                extracted_file = zip_ref.namelist()
+                self.downloaded_files.append(extracted_file[0])
+                zip_ref.extractall(f"{self.location}")
+            os.remove(f"{self.location}{source_file}")
+            print(f"extracted {source_file}")
+        else:
+            self.downloaded_files.append(source_file)
+
+            
+    def _get_results(self, page):
+        landing_page = f"{self.ons_landing_page}{page}"
+        r = requests.get(landing_page, verify=self.verify)
+        if r.status_code != 200:
+            raise Exception(f"{self.ons_landing_page}{page} returned a {r.status_code} error")
+        
+        soup = BeautifulSoup(r.content, "html.parser")
+        
+        results = soup.find(id="main")
+        return results
+    
+    
+    def _check_release_date(self, page):
+        # very hacky but works
+        # check release date
+        results = self._get_results(page)
+        elements = results.find_all("li", class_="col col--md-12 col--lg-15 meta__item")
+        element = str(elements[1])
+        release_date = element.split(">")[-3].split("<")[0]
+        
+        if release_date == self.todays_date:
+            return results
+        else:
+            results = self._get_results(f"{page}/?123") # in case it is a caching issue
+            # check release date again
+            elements = results.find_all("li", class_="col col--md-12 col--lg-15 meta__item")
+            element = str(elements[1])
+            release_date = element.split(">")[-3].split("<")[0]
+            assert release_date == self.todays_date, f"Release date does not match todays date, aborting source file download"
+            return results
+             
 
 class Base:
     def __init__(self, **kwargs):
@@ -147,7 +258,7 @@ class Base:
         # verify=False if on windows - hack for if using network machine
         if system_type == "Windows":
             self.verify = False
-            #requests.packages.urllib3.disable_warnings() # disables the insure request warnings
+            requests.packages.urllib3.disable_warnings() # disables the insure request warnings
         else:
             self.verify = True
             
@@ -950,7 +1061,7 @@ class UploadDetails:
         self.transform_output = transform_output
         
         # get upload details from upload_details.json
-        with open(f"{location}upload_details.json") as f:
+        with open(f"{self.location}upload_details.json") as f:
             self.upload_details = json.load(f)
             
     def create(self):
