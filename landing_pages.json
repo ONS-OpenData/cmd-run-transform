@@ -1,0 +1,39 @@
+{
+  "construction": {
+    "pages": [
+      "/businessindustryandtrade/constructionindustry/datasets/outputintheconstructionindustry"
+    ]
+  },
+  "online-jobs": {
+    "pages": [
+      "/economy/economicoutputandproductivity/output/datasets/onlinejobadvertestimates"
+    ]
+  },
+  "shipping-data": {
+    "pages": [
+      "/economy/economicoutputandproductivity/output/datasets/weeklyshippingindicators"
+    ]
+  },
+  "trade": {
+    "pages": [
+      "/economy/nationalaccounts/balanceofpayments/datasets/uktradecountrybycommodityimports",
+      "/economy/nationalaccounts/balanceofpayments/datasets/uktradecountrybycommodityexports"
+    ]
+  },
+  "traffic-camera-activity": {
+    "pages": [
+      "/economy/economicoutputandproductivity/output/datasets/trafficcameraactivity"
+    ]
+  },
+  "uk-spending-on-cards": {
+    "pages": [
+      "/economy/economicoutputandproductivity/output/datasets/ukspendingoncreditanddebitcards"
+    ]
+  },
+  "weekly-deaths": {
+    "pages": [
+      "/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/deathregistrationsandoccurrencesbylocalauthorityandhealthboard",
+      "/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales"
+    ]
+  }
+}
