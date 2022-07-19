@@ -145,8 +145,7 @@ class SourceData:
         
         # get todays date
         todays_date = datetime.datetime.now()
-        #self.todays_date = datetime.datetime.strftime(todays_date, "%d %B %Y")
-        self.todays_date = "13 July 2022"
+        self.todays_date = datetime.datetime.strftime(todays_date, "%d %B %Y")
         
         system_type = platform.system()
         # verify=False if on windows - hack for if using network machine
@@ -163,7 +162,7 @@ class SourceData:
         if self.dataset not in self.page_details.keys():
             print(f"no landing page available for {self.dataset}, will use files from current directory")
             return ""
-            
+
         # downloads and writes source files to 'location'
         assert self.dataset in self.page_details.keys(), f"{self.dataset} is not in {self.landing_page_json}, landing page is unknown"
         
