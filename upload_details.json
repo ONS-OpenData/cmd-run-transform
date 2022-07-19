@@ -15,6 +15,10 @@
     "edition": "time-series",
     "collection_name": "CMD index of private housing rental prices"
   },
+  "labour-market": {
+    "edition": "PWT22",
+    "collection_name": "CMD labour market statistics"
+  },
   "online-job-advert-estimates": {
     "edition": "feb-2020-index-by-category",
     "collection_name": "CMD online jobs"
