@@ -86,7 +86,6 @@ class Transform:
                 file_name = f"{module}.py".replace("-", "_")
                 file_name = f"{self.location}{file_name}"
                 module_script = self.requirements_dict[module]
-                print(file_name)
                 with open(file_name, "w") as f:
                     f.write(module_script)
                     f.close()
