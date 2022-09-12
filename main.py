@@ -1,4 +1,4 @@
-from clients import Transform, UploadToCmd, UploadDetails, SourceData
+from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData
 import sys
 
 kwargs = dict(arg.split('=') for arg in sys.argv[1:])
@@ -25,17 +25,29 @@ if 'credentials' in kwargs.keys():
 else:
     credentials = ""
 
+if 'run' in kwargs.keys():
+    if kwargs['run'] == 'locally':
+        run_locally = True
+    else:
+        run_locally = False
+else:
+    run_locally = False
 
 # running the transform
-transform = Transform(dataset, location=location, source_files=source_files)
-transform.run_transform()
+if run_locally:
+    transform = TransformLocal(dataset, source_files=source_files)
+    transform.run_transform()
+    
+else:
+    transform = Transform(dataset, location=location, source_files=source_files)
+    transform.run_transform()
 
-# creating upload_dict
-upload_dict = UploadDetails(transform.transform_output, location=location).create()
+    # creating upload_dict
+    upload_dict = UploadDetails(transform.transform_output, location=location).create()
 
-# uploading data
-if 'upload' in kwargs.keys():
-    if str(kwargs['upload']).lower() == 'true':
-        upload = UploadToCmd(upload_dict, credentials=credentials)
-        upload.run_upload()
+    # uploading data
+    if 'upload' in kwargs.keys():
+        if str(kwargs['upload']).lower() == 'true':
+            upload = UploadToCmd(upload_dict, credentials=credentials)
+            upload.run_upload()
 
