@@ -279,10 +279,13 @@ class TransformLocal:
             
             
         # getting any requirements
-        with open(self.requirements_location, "r") as f:
-            requirements = f.read()
-            f.close()
-        requirements = requirements.strip().split("\n")
+        if os.path.exists(self.requirements_location):
+            with open(self.requirements_location, "r") as f:
+                requirements = f.read()
+                f.close()
+            requirements = requirements.strip().split("\n")
+        else:
+            requirements = []
         
         for module in requirements:
             module_location = f"../cmd-transforms/modules/{module}/module.py"
