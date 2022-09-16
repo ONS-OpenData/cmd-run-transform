@@ -9,6 +9,11 @@
       "/economy/economicoutputandproductivity/output/datasets/onlinejobadvertestimates"
     ]
   },
+  "retail-sales": {
+    "pages": [
+      "/businessindustryandtrade/retailindustry/datasets/retailsalesindexreferencetables"
+    ]
+  },
   "shipping-data": {
     "pages": [
       "/economy/economicoutputandproductivity/output/datasets/weeklyshippingindicators"
