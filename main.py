@@ -5,6 +5,8 @@ kwargs = dict(arg.split('=') for arg in sys.argv[1:])
 
 assert 'dataset' in kwargs.keys(), "script requires a dataset to be passed as a kwarg"
 dataset = kwargs['dataset']
+if "," in dataset:
+        dataset = dataset.split(",")
 
 if 'location' in kwargs.keys():
     location = kwargs['location']
@@ -33,11 +35,22 @@ if 'run' in kwargs.keys():
 else:
     run_locally = False
 
+if 'upload' in kwargs.keys():
+    upload = kwargs['upload']
+    assert upload.lower() in ('true', 'false', 'partial'), f"upload key word must be either true/false/partial not {upload}"
+
 # running the transform
 if run_locally:
     transform = TransformLocal(dataset, source_files=source_files)
     transform.run_transform()
     
+elif upload.lower() == 'partial':
+    # runs a semi automated upload, requires v4 to be loaded manually, will pick up after this point
+    transform_output = {dataset: ''} # v4 path is not needed for the partial upload
+    upload_dict = UploadDetails(transform_output).create()
+    upload = UploadToCmd(upload_dict, credentials=credentials)
+    upload.run_import_after_upload()
+
 else:
     transform = Transform(dataset, location=location, source_files=source_files)
     transform.run_transform()
@@ -46,8 +59,7 @@ else:
     upload_dict = UploadDetails(transform.transform_output, location=location).create()
 
     # uploading data
-    if 'upload' in kwargs.keys():
-        if str(kwargs['upload']).lower() == 'true':
-            upload = UploadToCmd(upload_dict, credentials=credentials)
-            upload.run_upload()
-
+    if upload.lower() == 'true':
+        upload = UploadToCmd(upload_dict, credentials=credentials)
+        upload.run_upload()
+            
