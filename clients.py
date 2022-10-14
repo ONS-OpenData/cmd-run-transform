@@ -342,7 +342,7 @@ class TransformLocal:
 class Base:
     def __init__(self, **kwargs):
         # defining url's
-        self.url = "https://publishing.dp.aws.onsdigital.uk"
+        self.url = "https://publishing.dp-prod.aws.onsdigital.uk"
         self.dataset_url = f"{self.url}/dataset"
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
