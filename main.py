@@ -3,6 +3,7 @@ import sys
 
 kwargs = dict(arg.split('=') for arg in sys.argv[1:])
 
+
 assert 'dataset' in kwargs.keys(), "script requires a dataset to be passed as a kwarg"
 dataset = kwargs['dataset']
 if "," in dataset:
@@ -22,10 +23,10 @@ else:
     source = SourceData(dataset, location=location)
     source_files = source.get_source_files()
     
-if 'credentials' in kwargs.keys():
-    credentials = kwargs['credentials']
+if 'access_token' in kwargs.keys():
+    access_token = kwargs['access_token']
 else:
-    credentials = ""
+    access_token = ""
 
 if 'run' in kwargs.keys():
     if kwargs['run'] == 'locally':
@@ -38,6 +39,8 @@ else:
 if 'upload' in kwargs.keys():
     upload = kwargs['upload']
     assert upload.lower() in ('true', 'false', 'partial'), f"upload key word must be either true/false/partial not {upload}"
+else:
+     upload = 'false'
 
 # running the transform
 if run_locally:
@@ -48,7 +51,8 @@ elif upload.lower() == 'partial':
     # runs a semi automated upload, requires v4 to be loaded manually, will pick up after this point
     transform_output = {dataset: ''} # v4 path is not needed for the partial upload
     upload_dict = UploadDetails(transform_output).create()
-    upload = UploadToCmd(upload_dict, credentials=credentials)
+    #upload = UploadToCmd(upload_dict, credentials=credentials)
+    upload = UploadToCmd(upload_dict, access_token)
     upload.run_import_after_upload()
 
 else:
@@ -60,6 +64,6 @@ else:
 
     # uploading data
     if upload.lower() == 'true':
-        upload = UploadToCmd(upload_dict, credentials=credentials)
+        #upload = UploadToCmd(upload_dict, credentials=credentials)
+        upload = UploadToCmd(upload_dict)
         upload.run_upload()
-            

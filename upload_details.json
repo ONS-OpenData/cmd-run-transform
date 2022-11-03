@@ -27,6 +27,18 @@
     "edition": "time-series",
     "collection_name": "CMD shipping data"
   },
+  "retail-sales-index": {
+    "edition": "time-series",
+    "collection_name": "CMD retail sales index"
+  },
+  "retail-sales-index-all-businesses": {
+    "edition": "time-series",
+    "collection_name": "CMD retail sales all businesses"
+  },
+  "retail-sales-index-large-and-small-businesses": {
+    "edition": "time series",
+    "collection_name": "CMD retail sales large and small businesses"
+  },
   "suicides-in-the-uk": {
     "edition": "2021",
     "collection_name": "CMD suicides"
