@@ -40,5 +40,11 @@
       "/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/deathregistrationsandoccurrencesbylocalauthorityandhealthboard",
       "/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales"
     ]
+  },
+  "wellbeing-quarterly": {
+    "pages": [
+      "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesseasonallyadjusted",
+      "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesnonseasonallyadjusted"
+    ]
   }
 }
