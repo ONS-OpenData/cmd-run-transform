@@ -59,6 +59,10 @@
     "edition": "2022",
     "collection_name": "CMD weekly deaths by health board"
   },
+  "weekly-deaths-health-board-previous": {
+    "edition": "2021",
+    "collection_name": "CMD weekly deaths by health board"
+  },
   "weekly-deaths-age-sex": {
     "edition": "covid-19",
     "collection_name": "CMD weekly deaths by age and sex"
@@ -69,6 +73,10 @@
   },
   "weekly-deaths-local-authority": {
     "edition": "2022",
+    "collection_name": "CMD weekly deaths by local authority"
+  },
+  "weekly-deaths-local-authority-previous": {
+    "edition": "2021",
     "collection_name": "CMD weekly deaths by local authority"
   },
   "wellbeing-quarterly": {
