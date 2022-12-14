@@ -214,7 +214,7 @@ class SourceData:
             elements = results.find_all("li", class_="col col--md-12 col--lg-15 meta__item")
             element = str(elements[1])
             release_date = element.split(">")[-3].split("<")[0]
-            assert release_date == self.todays_date, f"Release date does not match todays date, aborting source file download"
+            #assert release_date == self.todays_date, f"Release date does not match todays date, aborting source file download"
             return results
              
 
