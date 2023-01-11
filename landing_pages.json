@@ -41,6 +41,12 @@
       "/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales"
     ]
   },
+  "wellbeing-estimates": {
+    "pages": [
+      "/peoplepopulationandcommunity/wellbeing/datasets/headlineestimatesofpersonalwellbeing",
+      "/peoplepopulationandcommunity/wellbeing/datasets/qualityinformationforpersonalwellbeingestimates"
+    ]
+  },
   "wellbeing-quarterly": {
     "pages": [
       "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesseasonallyadjusted",
