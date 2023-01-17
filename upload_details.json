@@ -35,6 +35,10 @@
     "edition": "time-series",
     "collection_name": "CMD labour market rolling quarters"
   },
+  "mid-year-pop-est": {
+    "edition": "mid-2021-april-2022-geography",
+    "collection_name": "CMD mid year pop est"
+  },
   "online-job-advert-estimates": {
     "edition": "feb-2020-index-by-category",
     "collection_name": "CMD online jobs"
