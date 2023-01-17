@@ -1,5 +1,5 @@
 from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData
-import sys
+import sys, os
 
 kwargs = dict(arg.split('=') for arg in sys.argv[1:])
 
@@ -23,13 +23,6 @@ if 'source_files' in kwargs.keys():
         source_files = source_files.split(",")
 else:
     source_files = None # will be downloaded if possible
-
-# credentials - used to generate access_token
-# does not need to be given if credentials file in working directory 
-if 'credentials' in kwargs.keys():
-    credentials = kwargs['credentials']
-else:
-    credentials = ""
 
 # to run local script - used when changes are needed to a transform and want to be tested
 # needed because of caching issues when pulling transform from github
@@ -75,13 +68,13 @@ if upload == 'true':
     # creating upload_dict
     upload_dict = UploadDetails(transform_output, location=location).create()
 
-    upload = UploadToCmd(upload_dict, credentials=credentials)
+    upload = UploadToCmd(upload_dict)
     upload.run_upload()
 
 elif upload == 'partial':
     # creating upload_dict
     upload_dict = UploadDetails(transform_output, location=location).create()
 
-    upload = UploadToCmd(upload_dict, credentials=credentials)
+    upload = UploadToCmd(upload_dict)
     upload.run_partial_upload()
 
