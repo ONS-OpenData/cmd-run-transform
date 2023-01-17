@@ -19,6 +19,22 @@
     "edition": "PWT22",
     "collection_name": "CMD labour market statistics"
   },
+  "labour-market-quarters-months": {
+    "edition": "time-series",
+    "collection_name": "CMD labour market quarters months"
+  },
+  "labour-market-monthly": {
+    "edition": "time-series",
+    "collection_name": "CMD labour market monthly"
+  },
+  "labour-market-quarterly": {
+    "edition": "time-series",
+    "collection_name": "CMD labour market quarterly"
+  },
+  "labour-market-rolling-quarters": {
+    "edition": "time-series",
+    "collection_name": "CMD labour market rolling quarters"
+  },
   "online-job-advert-estimates": {
     "edition": "feb-2020-index-by-category",
     "collection_name": "CMD online jobs"
@@ -56,11 +72,11 @@
     "collection_name": "CMD uk spending on cards"
   },
   "weekly-deaths-health-board": {
-    "edition": "2022",
+    "edition": "2023",
     "collection_name": "CMD weekly deaths by health board"
   },
   "weekly-deaths-health-board-previous": {
-    "edition": "2021",
+    "edition": "2022",
     "collection_name": "CMD weekly deaths by health board"
   },
   "weekly-deaths-age-sex": {
@@ -72,11 +88,11 @@
     "collection_name": "CMD weekly deaths by region"
   },
   "weekly-deaths-local-authority": {
-    "edition": "2022",
+    "edition": "2023",
     "collection_name": "CMD weekly deaths by local authority"
   },
   "weekly-deaths-local-authority-previous": {
-    "edition": "2021",
+    "edition": "2022",
     "collection_name": "CMD weekly deaths by local authority"
   },
   "wellbeing-quarterly": {
