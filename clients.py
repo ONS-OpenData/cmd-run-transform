@@ -333,20 +333,8 @@ class Base:
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
         self.upload_url = f"{self.url}/upload"
-
-        # defining kwargs
-        if 'credentials' in kwargs.keys() and kwargs['credentials'] != '':
-            credentials = kwargs['credentials']
-        else:
-            # looks for credentials file in working directory
-            credentials = "florence-details.json"
-            if not os.path.exists(credentials):
-                raise Exception("No credentials file was given or could be found in working directory")
         
-        # assigning given variables
-        self.credentials = credentials
-        
-        # assigning futher variables
+        # assigning variables
         self._get_access_token()
         self.headers = {"X-Florence-Token": self.access_token}
         
@@ -359,11 +347,14 @@ class Base:
         except:
         
             login_url = f"{self.url}/login"
-            with open(self.credentials, 'r') as json_file:
-                credentials_json = json.load(json_file)
-            
-            email = credentials_json['email']
-            password = credentials_json['password']
+
+            # getting credential from environment variables
+            email = os.getenv('FLORENCE_EMAIL')
+            if not email:
+                raise Exception("FLORENCE_EMAIL not found in environment variables")
+            password = os.getenv('FLORENCE_PASSWORD')
+            if not password:
+                raise Exception("FLORENCE_PASSWORD not found in environment variables")
             login = {"email":email, "password":password}
 
             r = requests.post(login_url, json=login)
@@ -1072,6 +1063,7 @@ class UploadClient(Base):
                 if r.status_code != 200:  
                     raise Exception(f"{self.upload_url} returned error {r.status_code}")
                     
+                print(f"tmp file number - {chunk_number} posted")
                 chunk_number += 1 # moving onto next chunk number
 
         s3_key = params["resumableIdentifier"]
