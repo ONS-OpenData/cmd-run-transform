@@ -1,48 +1,26 @@
 from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData
-import sys, os
+import argparse 
 
-kwargs = dict(arg.split('=') for arg in sys.argv[1:])
+parser = argparse.ArgumentParser(description='Transform and upload program')
+parser.add_argument("-d", "--datasets", help="Datasets to be transformed", nargs="*", required=True)
+parser.add_argument("-u", "--upload", help="Flag for whether upload should be run", action="store_true")
+parser.add_argument("-up", "--upload_partial", help="Flag for whether the partial upload should be run", action="store_true")
+parser.add_argument("-rl", "--run_locally", help="Flag for whether transform should be run from local script", action="store_true")
+parser.add_argument("-s", "--source_files", help="Flag for giving source files directly", nargs="*")
 
-assert 'dataset' in kwargs.keys(), "script requires a dataset to be passed as a kwarg"
-dataset = kwargs['dataset']
-if "," in dataset:
-    datasets = dataset.split(",")
-else: # using the datasets as a list
-    datasets = [dataset]
+args = parser.parse_args()
 
-# location - used if any files not in working directory
-if 'location' in kwargs.keys():
-    location = kwargs['location']
-else:
-    location = ""
+datasets = args.datasets
+upload = args.upload
+upload_partial = args.upload_partial
+run_locally = args.run_locally # to run local script - used when changes are needed to a transform and want to be tested
+source_files = args.source_files # pass source file(s) path if source data is not from ons site    
+location = "" # location - used if any files not in working directory
 
-# source files - pass source file(s) path if source data is not from ons site    
-if 'source_files' in kwargs.keys():
-    source_files = kwargs['source_files']
-    if "," in source_files:
-        source_files = source_files.split(",")
-else:
-    source_files = None # will be downloaded if possible
-
-# to run local script - used when changes are needed to a transform and want to be tested
-# needed because of caching issues when pulling transform from github
-if 'run' in kwargs.keys():
-    if kwargs['run'] == 'locally':
-        run_locally = True
-    else:
-        run_locally = False
-else:
-    run_locally = False
-
-# upload - used to determine what will be run
-# true - will run transform and full upload process
-# partial - will run the partial upload -> stops after instance is complete
-# false - will run transform only, is default option
-if 'upload' in kwargs.keys():
-    upload = kwargs['upload']
-    assert upload.lower() in ('true', 'false', 'partial'), f"upload key word must be either true/false/partial not {upload}"
-else:
-     upload = 'false'
+if upload and upload_partial:
+    raise Exception("Cannot run with both '-u' & '-up' flags") 
+if upload_partial:
+    upload = 'partial'
 
 # running the transform
 transform_output = {}
@@ -53,6 +31,7 @@ for dataset in datasets:
         source_files = source.get_source_files()
 
     if run_locally:
+        print("running transform locally")
         transform = TransformLocal(dataset, source_files=source_files)
         transform.run_transform()
 
@@ -64,7 +43,7 @@ for dataset in datasets:
     transform_output.update(transform.transform_output)
 
 # uploading data
-if upload == 'true':
+if upload == True:
     # creating upload_dict
     upload_dict = UploadDetails(transform_output, location=location).create()
 
@@ -73,6 +52,7 @@ if upload == 'true':
 
 elif upload == 'partial':
     # creating upload_dict
+    print('running partial upload')
     upload_dict = UploadDetails(transform_output, location=location).create()
 
     upload = UploadToCmd(upload_dict)
