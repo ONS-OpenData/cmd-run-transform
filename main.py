@@ -1,12 +1,13 @@
-from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData
-import argparse 
+from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData, ClearRepo
+import argparse
 
 parser = argparse.ArgumentParser(description='Transform and upload program')
 parser.add_argument("-d", "--datasets", help="Datasets to be transformed", nargs="*", required=True)
-parser.add_argument("-u", "--upload", help="Flag for whether upload should be run", action="store_true")
-parser.add_argument("-up", "--upload_partial", help="Flag for whether the partial upload should be run", action="store_true")
-parser.add_argument("-rl", "--run_locally", help="Flag for whether transform should be run from local script", action="store_true")
-parser.add_argument("-s", "--source_files", help="Flag for giving source files directly", nargs="*")
+parser.add_argument("-u", "--upload", help="Include if upload should be run", action="store_true")
+parser.add_argument("-up", "--upload_partial", help="Include if partial upload should be run", action="store_true")
+parser.add_argument("-rl", "--run_locally", help="Include if transform should be run from local script", action="store_true")
+parser.add_argument("-s", "--source_files", help="Include if giving source files directly", nargs="*")
+parser.add_argument("-C", "--clear_repo", help="Include to clear up repo after upload run", action="store_true")
 
 args = parser.parse_args()
 
@@ -16,11 +17,15 @@ upload_partial = args.upload_partial
 run_locally = args.run_locally # to run local script - used when changes are needed to a transform and want to be tested
 source_files = args.source_files # pass source file(s) path if source data is not from ons site    
 location = "" # location - used if any files not in working directory
+clear_repo = args.clear_repo # clears repo of source files and v4s after upload
 
 if upload and upload_partial:
     raise Exception("Cannot run with both '-u' & '-up' flags") 
 if upload_partial:
     upload = 'partial'
+
+if clear_repo:
+    ClearRepo()
 
 # running the transform
 transform_output = {}
