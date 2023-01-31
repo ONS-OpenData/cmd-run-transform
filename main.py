@@ -24,9 +24,6 @@ if upload and upload_partial:
 if upload_partial:
     upload = 'partial'
 
-if clear_repo:
-    ClearRepo()
-
 # running the transform
 transform_output = {}
 for dataset in datasets:
@@ -63,3 +60,5 @@ elif upload == 'partial':
     upload = UploadToCmd(upload_dict)
     upload.run_partial_upload()
 
+if clear_repo:
+    ClearRepo()
