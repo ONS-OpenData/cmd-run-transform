@@ -1,7 +1,11 @@
-from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData, ClearRepo
+from clients import Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData, ClearRepo, list_of_transforms
 import argparse
 
-parser = argparse.ArgumentParser(description='Transform and upload program')
+description = f'''Transform and upload program - transforms available as of 15/02/23:
+{list_of_transforms}
+'''
+
+parser = argparse.ArgumentParser(description=description)
 parser.add_argument("-d", "--datasets", help="Datasets to be transformed", nargs="*", required=True)
 parser.add_argument("-u", "--upload", help="Include if upload should be run", action="store_true")
 parser.add_argument("-up", "--upload_partial", help="Include if partial upload should be run", action="store_true")
@@ -62,3 +66,4 @@ elif upload == 'partial':
 
 if clear_repo:
     ClearRepo()
+

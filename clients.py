@@ -3,7 +3,12 @@ from bs4 import BeautifulSoup
 
 
 TRANSFORM_URL = "https://raw.github.com/ONS-OpenData/cmd-transforms/master"
-
+list_of_transforms = [
+    "construction", "cpih", "gdp-to-4dp", "house-prices", "index-private-housing-rental-prices", 
+    "labour-market-cdid", "lms", "mid-year-pop-est", "online-jobs", "regional-gdp", "retail-sales",
+    "shipping-data", "suicides", "trade", "traffic-camera-activity", "uk-spending-on-cards", 
+    "weekly-deaths-previous", "weekly-deaths", "wellbeing-estimates", "wellbeing-quarterly"
+]
 
 class Transform:
     def __init__(self, dataset, **kwargs):
