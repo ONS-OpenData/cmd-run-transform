@@ -50,7 +50,8 @@
   "wellbeing-quarterly": {
     "pages": [
       "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesseasonallyadjusted",
-      "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesnonseasonallyadjusted"
+      "/peoplepopulationandcommunity/wellbeing/datasets/quarterlypersonalwellbeingestimatesnonseasonallyadjusted",
+      "/peoplepopulationandcommunity/wellbeing/datasets/qualityofinformationforquarterlypersonalwellbeingestimates"
     ]
   }
 }
