@@ -12,6 +12,7 @@ parser.add_argument("-up", "--upload_partial", help="Include if partial upload s
 parser.add_argument("-rl", "--run_locally", help="Include if transform should be run from local script", action="store_true")
 parser.add_argument("-s", "--source_files", help="Include if giving source files directly", nargs="*")
 parser.add_argument("-C", "--clear_repo", help="Include to clear up repo after upload run", action="store_true")
+parser.add_argument("-I", "--ignore_release_date", help="Include to ignore release date when downloading source files", action="store_true")
 
 args = parser.parse_args()
 
@@ -22,6 +23,7 @@ run_locally = args.run_locally # to run local script - used when changes are nee
 source_files = args.source_files # pass source file(s) path if source data is not from ons site    
 location = "" # location - used if any files not in working directory
 clear_repo = args.clear_repo # clears repo of source files and v4s after upload
+ignore_release_date = args.ignore_release_date # ignores release date of source files
 
 if upload and upload_partial:
     raise Exception("Cannot run with both '-u' & '-up' flags") 
@@ -33,7 +35,7 @@ transform_output = {}
 for dataset in datasets:
     if not source_files: # source files need downloading
         print(f"downloading source files for {dataset}")
-        source = SourceData(dataset, location=location)
+        source = SourceData(dataset, location=location, ignore_release_date=ignore_release_date)
         source_files = source.get_source_files()
 
     if run_locally:

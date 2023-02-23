@@ -130,6 +130,11 @@ class SourceData:
         else:
             location = ''
         self.location = location
+
+        if 'ignore_release_date' in kwargs.keys():
+            self.ignore_release_date = kwargs['ignore_release_date']
+        else:
+            self.ignore_release_date = False
         
         self.landing_page_json = f"{self.location}landing_pages.json"
         # get landing pages from landing_pages.json
@@ -211,6 +216,10 @@ class SourceData:
         element = str(elements[1])
         release_date = element.split(">")[-3].split("<")[0]
         
+        if self.ignore_release_date:
+            # ignores release date if flag is passed
+            return results
+
         if release_date == self.todays_date:
             return results
         else:
@@ -403,9 +412,14 @@ class MetadataClient:
         url = f"{editions_url}/{str(latest_version_number)}"
         # get latest version data
         latest_version = requests.get(url).json()
-        csvw_response = requests.get(latest_version['downloads']['csvw']['href'])
-        if csvw_response.status_code != 200:
-            return f"csvw download failed with a {csvw_response.status_code} error"
+        try:
+            csvw_response = requests.get(latest_version['downloads']['csvw']['href'])
+            if csvw_response.status_code != 200:
+                print(f"csvw download failed with a {csvw_response.status_code} error")
+                return 
+        except:
+            print(f"csvw does not exist for {dataset_id} version {latest_version_number}")
+            return 
         self.csvw_dict = json.loads(csvw_response.text)
         self._csvw_metadata_parser(dataset_id)
 
@@ -681,6 +695,11 @@ class DatasetClient(Base, MetadataClient):
     
     def adding_metadata(self):
         for dataset_id in self.upload_dict.keys():
+            try:
+                self.upload_dict[dataset_id]["metadata_dict"]
+            except:
+                print(f"No metadata available for {dataset_id}")
+                pass
             self._update_dimensions(dataset_id)
             self._update_usage_notes(dataset_id)
             
@@ -902,6 +921,12 @@ class DatasetClient(Base, MetadataClient):
         """
         Updates general metadata for a dataset
         """
+        try:
+            self.upload_dict[dataset_id]['metadata_dict']
+        except:
+            print(f"No metadata for {dataset_id}")
+            return 
+        
         metadata = self.upload_dict[dataset_id]['metadata_dict']['metadata']
         assert type(metadata) == dict, "metadata['metadata'] must be a dict"
 
