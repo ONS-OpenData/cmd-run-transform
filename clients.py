@@ -396,10 +396,10 @@ class MetadataClient:
             if self.upload_dict[dataset_id]['metadata_dict']:
                 pass
         except:
-            self._get_lastest_metadata(dataset_id, edition)
+            self._get_latest_metadata(dataset_id, edition)
             
         
-    def _get_lastest_metadata(self, dataset_id, edition):
+    def _get_latest_metadata(self, dataset_id, edition):
         """
         Pulls latest csvw
         """
@@ -684,7 +684,7 @@ class DatasetClient(Base, MetadataClient):
         '''
         for dataset_id in self.upload_dict.keys():
             # get metadata from previous release
-            self._get_lastest_metadata(dataset_id, self.upload_dict[dataset_id]['edition'])
+            self._get_latest_metadata(dataset_id, self.upload_dict[dataset_id]['edition'])
             
             # updating general metadata
             self._update_metadata(dataset_id)
@@ -699,7 +699,7 @@ class DatasetClient(Base, MetadataClient):
                 self.upload_dict[dataset_id]["metadata_dict"]
             except:
                 print(f"No metadata available for {dataset_id}")
-                pass
+                return
             self._update_dimensions(dataset_id)
             self._update_usage_notes(dataset_id)
             

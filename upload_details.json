@@ -56,7 +56,7 @@
     "collection_name": "CMD retail sales all businesses"
   },
   "retail-sales-index-large-and-small-businesses": {
-    "edition": "time series",
+    "edition": "time-series",
     "collection_name": "CMD retail sales large and small businesses"
   },
   "suicides-in-the-uk": {
