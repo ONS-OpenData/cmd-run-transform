@@ -143,6 +143,12 @@ class SourceData:
         
         self.dataset = dataset
         self.ons_landing_page = "https://www.ons.gov.uk"
+
+        if '-previous' in dataset:
+            # for weekly-deaths-previous
+            self.is_previous = True
+        else:
+            self.is_previous = False
         
         # get todays date
         todays_date = datetime.datetime.now()
@@ -173,6 +179,9 @@ class SourceData:
         # get link
         elements = results.find_all("div", class_="inline-block--md margin-bottom-sm--1")
         element = elements[0] # latest comes first
+
+        if self.is_previous:
+            element = elements[1] # previous edition uses second link
         
         link = str(element).split("href=")[-1].split(">")[0].strip('"')
         download_link = f"{self.ons_landing_page}{link}"
