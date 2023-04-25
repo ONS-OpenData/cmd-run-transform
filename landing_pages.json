@@ -41,6 +41,11 @@
       "/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/weeklyprovisionalfiguresondeathsregisteredinenglandandwales"
     ]
   },
+  "weekly-deaths-previous": {
+    "pages": [
+      "/peoplepopulationandcommunity/healthandsocialcare/causesofdeath/datasets/deathregistrationsandoccurrencesbylocalauthorityandhealthboard"
+    ]
+  },
   "wellbeing-estimates": {
     "pages": [
       "/peoplepopulationandcommunity/wellbeing/datasets/headlineestimatesofpersonalwellbeing",
