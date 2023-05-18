@@ -47,6 +47,14 @@
     "edition": "time-series",
     "collection_name": "CMD shipping data"
   },
+  "regional-gdp-by-quarter": {
+    "edition": "time-series",
+    "collection_name": "CMD regional gdp by quarter"
+  },
+  "regional-gdp-by-year": {
+    "edition": "time-series",
+    "collection_name": "CMD regional gdp by year"
+  },
   "retail-sales-index": {
     "edition": "time-series",
     "collection_name": "CMD retail sales index"
