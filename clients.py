@@ -37,7 +37,8 @@ class Transform:
             source_files = glob.glob(f"{location}*")
             source_files = [file for file in source_files if '.py' not in file] # ignoring py files
             source_files = [file for file in source_files if '__' not in file] # ignoring pycache
-            source_files = [file for file in source_files if '.json' not in file] # ignoring json 
+            source_files = [file for file in source_files if '.json' not in file] # ignoring json
+            source_files = [file for file in source_files if '.md' not in file] # ignoring README 
         self.source_files = source_files
         
         self.transform_url = f"{TRANSFORM_URL}/{self.dataset}/main.py"
@@ -266,6 +267,7 @@ class TransformLocal:
             source_files = [file for file in source_files if '.py' not in file] # ignoring py files
             source_files = [file for file in source_files if '__' not in file] # ignoring pycache
             source_files = [file for file in source_files if '.json' not in file] # ignoring json 
+            source_files = [file for file in source_files if '.md' not in file] # ignoring README
         self.source_files = source_files
         
         self.transform_location = f"{self.path_to_local_transforms}/cmd-transforms/{self.dataset}/main.py"
