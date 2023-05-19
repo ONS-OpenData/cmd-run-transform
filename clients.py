@@ -1236,7 +1236,7 @@ class UploadDetails:
         return upload_dict
     
 def ClearRepo():
-    files_to_keep = ("clients.py", "main.py", "landing_pages.json", "upload_details.json")
+    files_to_keep = ("clients.py", "main.py", "landing_pages.json", "upload_details.json", "README.md")
 
     for item in os.listdir():
         if os.path.isdir(item):
