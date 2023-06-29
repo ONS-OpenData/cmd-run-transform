@@ -26,3 +26,7 @@ Uploading the file can be run at the same time using the  -u flag (order of the 
 `python main.py -d dataset_id -u`
 
 As the transform and upload is running, the script will provide feedback for the stage that it is on (number of imported observations for example) and will let you know when it is complete.
+
+Most transforms
+
+## Other flags
