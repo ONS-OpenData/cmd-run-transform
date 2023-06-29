@@ -31,6 +31,8 @@ Most transforms pull the source data from the ons website, a list of the transfo
 
 ## Flags
 
+| Flag | Description |
+| --- | --- |
 | `-h` | help flag, will also print a list of available transforms. |
 | `-d` | dataset flag (required), follow with the dataset(s) that you want run. |
 | `-u` | upload flag, used to run the upload. |
