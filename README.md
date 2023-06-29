@@ -27,6 +27,18 @@ Uploading the file can be run at the same time using the  -u flag (order of the 
 
 As the transform and upload is running, the script will provide feedback for the stage that it is on (number of imported observations for example) and will let you know when it is complete.
 
-Most transforms
+Most transforms pull the source data from the ons website, a list of the transforms that do this along with the source data url can be found [here](https://github.com/ONS-OpenData/cmd-run-transform/blob/master/landing_pages.json). Any transform not on this list will need the source file(s) to be added into the repo before running.
 
-## Other flags
+## Flags
+
+| `-h` | help flag, will also print a list of available transforms. |
+| `-d` | dataset flag (required), follow with the dataset(s) that you want run. |
+| `-u` | upload flag, used to run the upload. |
+| `-s` | source_file flag, used if specifying source files directly. Not needed if files are pulled directly or if files are in repo. |
+| `-up` | partial upload flag, runs a partial upload - which stops after the instance upload is complete. |
+| `-rl` | run locally flag, runs a transform that is stored locally (rather than from github), useful when changes are needed to a transform. |
+| `-C` | clear repo flag, clears all source files and v4s after upload is complete (useful to keep repo from getting cluttered). |
+| `-I` | ignore release date flag, transform will fail if run on a different day to source file being released, use this flag to override this. |
+
+ 
+
