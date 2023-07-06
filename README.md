@@ -38,7 +38,7 @@ Most transforms pull the source data from the ons website, a list of the transfo
 | `-u` | upload flag, used to run the upload. |
 | `-s` | source_file flag, used if specifying source files directly. Not needed if files are pulled directly or if files are in repo. |
 | `-up` | partial upload flag, runs a partial upload - which stops after the instance upload is complete. |
-| `-rl` | run locally flag, runs a transform that is stored locally (rather than from github), useful when changes are needed to a transform. |
+| `-rl` | run locally flag, runs a transform that is stored locally (rather than from github), useful when changes are needed to a transform. Path to local transforms should be "../cmd-transforms/<dataset_id>/main.py" |
 | `-C` | clear repo flag, clears all source files and v4s after upload is complete (useful to keep repo from getting cluttered). |
 | `-I` | ignore release date flag, transform will fail if run on a different day to source file being released, use this flag to override this. |
 
