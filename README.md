@@ -29,6 +29,8 @@ As the transform and upload is running, the script will provide feedback for the
 
 Most transforms pull the source data from the ons website, a list of the transforms that do this along with the source data url can be found [here](https://github.com/ONS-OpenData/cmd-run-transform/blob/master/landing_pages.json). Any transform not on this list will need the source file(s) to be added into the repo before running.
 
+In order to use the upload function of the app `-u` the user must have access to Florence and the login credentials must be stored as environment variables. "FLORENCE_EMAIL" as the login email and "FLORENCE_PASSWORD" as the password.
+
 ## Flags
 
 | Flag | Description |
