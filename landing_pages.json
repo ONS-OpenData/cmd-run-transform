@@ -1,4 +1,55 @@
 {
+  "ashe": {
+    "ashe-tables-3":{
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/regionbyoccupation2digitsocashetable3"
+      ]
+    },
+    "ashe-table-5":{
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/regionbyindustry2digitsicashetable5"
+      ]
+    },
+    "ashe-tables-7-and-8": {
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofworkbylocalauthorityashetable7",
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofresidencebylocalauthorityashetable8"
+      ]
+    },
+    "ashe-tables-9-and-10": {
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofworkbyparliamentaryconstituencyashetable9",
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofresidencebyparliamentaryconstituencyashetable10"
+      ]
+    },
+    "ashe-tables-11-and-12": {
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/workbasedtraveltoworkareaashetable11",
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/residencebasedtraveltoworkareaashetable12"
+      ]
+    },
+    "ashe-tables-20":{
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/agegroupbyoccupation2digitsocashetable20"
+      ]
+    },
+    "ashe-tables-25":{
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/regionbypublicandprivatesectorashetable25"
+      ]
+    },
+    "ashe-tables-26":{
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/careworkerssocashetable26"
+      ]
+    },
+    "ashe-tables-27-and-28": {
+      "pages": [
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofworkbylocalenterprisepartnershipsashetable27",
+        "/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/placeofresidencebylocalenterprisepartnershipsashetable28"
+      ]
+    }
+  },
   "construction": {
     "pages": [
       "/businessindustryandtrade/constructionindustry/datasets/outputintheconstructionindustry"
