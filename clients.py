@@ -157,8 +157,14 @@ class SourceData:
         self.todays_date = datetime.datetime.strftime(todays_date, "%d %B %Y")
 
         self.downloaded_files = []
-        
-        
+
+        # get user-agent
+        email = os.getenv('FLORENCE_EMAIL')
+        if not email:
+            email = 'cmd@ons.gov.uk' # generic cmd email
+
+        self.user_agent = {"User-Agent": f"cmd-run-transforms/Version1.0.0 ONS {email}"}
+
     def get_source_files(self):
         if self.dataset not in self.page_details.keys():
             print(f"no landing page available for {self.dataset}, will use files from current directory")
@@ -173,7 +179,6 @@ class SourceData:
             self._download(page)
 
         return self.downloaded_files
-        
         
     def _download(self, page):
         results = self._check_release_date(page)
@@ -190,7 +195,7 @@ class SourceData:
         
         # download the file
         source_file = download_link.split('/')[-1]
-        r = requests.get(download_link)
+        r = requests.get(download_link, headers=self.user_agent)
         with open(f"{self.location}{source_file}", 'wb') as output:
             output.write(r.content)
         print(f"written {source_file}")
@@ -206,10 +211,9 @@ class SourceData:
         else:
             self.downloaded_files.append(source_file)
 
-            
     def _get_results(self, page):
         landing_page = f"{self.ons_landing_page}{page}"
-        r = requests.get(landing_page)
+        r = requests.get(landing_page, headers=self.user_agent)
         if r.status_code != 200:
             raise Exception(f"{self.ons_landing_page}{page} returned a {r.status_code} error")
         
@@ -217,7 +221,6 @@ class SourceData:
         
         results = soup.find(id="main")
         return results
-    
     
     def _check_release_date(self, page):
         # very hacky but works
@@ -1553,6 +1556,13 @@ class AsheSourceData:
         assert provisional_or_revised in ('revised', 'provisional'), f"must be 'provisional' or 'revised' not {self.provisional_or_revised}"
 
         self.downloaded_files = []
+
+        # get user-agent
+        email = os.getenv('FLORENCE_EMAIL')
+        if not email:
+            email = 'cmd@ons.gov.uk' # generic cmd email
+
+        self.user_agent = {"User-Agent": f"cmd-run-transforms/Version1.0.0 ONS {email}"}
         
     def get_source_files(self):
         if self.table_number not in self.page_details['ashe'].keys():
@@ -1584,7 +1594,7 @@ class AsheSourceData:
         
         # download the file
         source_file = download_link.split('/')[-1]
-        r = requests.get(download_link)
+        r = requests.get(download_link, headers=self.user_agent)
         with open(f"{source_file}", 'wb') as output:
             output.write(r.content)
         print(f"written {source_file}")
@@ -1602,7 +1612,7 @@ class AsheSourceData:
             
     def _get_results(self, page):
         landing_page = f"{self.ons_landing_page}{page}"
-        r = requests.get(landing_page)
+        r = requests.get(landing_page, headers=self.user_agent)
         if r.status_code != 200:
             raise Exception(f"{self.ons_landing_page}{page} returned a {r.status_code} error")
         
