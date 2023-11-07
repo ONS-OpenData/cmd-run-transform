@@ -80,7 +80,7 @@
     "collection_name": "CMD online jobs"
   },
   "faster-indicators-shipping-data": {
-    "edition": "time-series",
+    "edition": "2023-time-series",
     "collection_name": "CMD shipping data"
   },
   "regional-gdp-by-quarter": {
@@ -102,6 +102,14 @@
   "retail-sales-index-large-and-small-businesses": {
     "edition": "time-series",
     "collection_name": "CMD retail sales large and small businesses"
+  },
+  "sexual-orientation-by-age-and-sex": {
+    "edition": "time-series",
+    "collection_name": "CMD sexual orientation by age and sex"
+  },
+  "sexual-orientation-by-region": {
+    "edition": "time-series",
+    "collection_name": "CMD sexual orientation by region"
   },
   "suicides-in-the-uk": {
     "edition": "2021",
