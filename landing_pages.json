@@ -65,6 +65,11 @@
       "/businessindustryandtrade/retailindustry/datasets/retailsalesindexreferencetables"
     ]
   },
+  "sexual-orientation": {
+    "pages": [
+      "/peoplepopulationandcommunity/culturalidentity/sexuality/datasets/sexualidentityuk"
+    ]
+  },
   "shipping-data": {
     "pages": [
       "/economy/economicoutputandproductivity/output/datasets/weeklyshippingindicators"
