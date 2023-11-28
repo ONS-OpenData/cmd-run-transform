@@ -151,6 +151,10 @@
     "edition": "2022",
     "collection_name": "CMD weekly deaths by local authority"
   },
+  "wellbeing-local-authority": {
+    "edition": "time-series",
+    "collection_name": "CMD wellbeing by local authority"
+  },
   "wellbeing-quarterly": {
     "edition": "time-series",
     "collection_name": "CMD wellbeing quarterly"
