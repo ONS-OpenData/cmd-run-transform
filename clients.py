@@ -1413,7 +1413,10 @@ class AsheTransform:
         source_files = [file for file in source_files if '__' not in file] # ignoring pycache
         source_files = [file for file in source_files if '.json' not in file] # ignoring json
         source_files = [file for file in source_files if '.md' not in file] # ignoring README 
-        self.source_files = source_files
+        if len(source_files) == 1 and os.path.isdir(source_files[0]):
+            self.source_files = glob.glob(f"{source_files[0]}/*")
+        else:
+            self.source_files = source_files
         
         self.transform_url = f"{TRANSFORM_URL}/ashe/{self.dataset}/main.py"
         self.requirements_url = f"{TRANSFORM_URL}/ashe/{self.dataset}/requirements.txt"
@@ -1469,9 +1472,10 @@ class AsheTransform:
                     f.close()
                 print(f"module script wrote as {file_name}")
 
-        """
+    def _write_transform_local(self):
         # used for running local transforms
         # getting transform script
+        print("Running local transform")
         with open(self.transform_location, "r") as f: 
             script = f.read()
             f.close()
@@ -1508,7 +1512,7 @@ class AsheTransform:
                     f.write(module_script)
                     f.close()
                 print(f"module script wrote as {file_name}")
-        """  
+         
     
     def _del_transform(self):
         # deletes the written transform and requirements scripts
@@ -1525,6 +1529,27 @@ class AsheTransform:
         
         # write the transform and any requirements
         self._write_transform()
+        
+        # import transform
+        sys.path.append(f"")
+        print(f"Running transform on: {self.dataset}")
+        from temp_transform_script import transform
+        # catch any errors in the transform
+        try:
+            self.transform_output = transform(self.source_files, year_of_data=self.year_of_data)
+        except Exception as e:
+            print(f"Error in transform - {self.dataset}")
+            self._del_transform() # del scripts to avoid hangover
+            raise Exception(e)
+        # del scripts
+        self._del_transform()
+        del sys.modules['temp_transform_script'] # causes issue with multipart transform if not deleted
+
+    def run_transform_local(self):
+        # runs the transform 
+        
+        # write the transform and any requirements
+        self._write_transform_local()
         
         # import transform
         sys.path.append(f"")
