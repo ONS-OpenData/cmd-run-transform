@@ -504,8 +504,11 @@ class MetadataClient:
         
         for item in wanted_dimension_metadata:
             name = item["titles"]
-            label = item["name"]
             description = item["description"]
+            if "name" in item:
+                label = item["name"]
+            else:
+                label = name
             dimension_metadata_for_cmd[name] = {"label": label, "description": description}
             
         return dimension_metadata_for_cmd
