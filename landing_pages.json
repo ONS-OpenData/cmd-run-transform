@@ -75,6 +75,11 @@
       "/economy/economicoutputandproductivity/output/datasets/weeklyshippingindicators"
     ]
   },
+  "suicides": {
+    "pages": [
+      "/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/suicidesbylocalauthority"
+    ]
+  },
   "trade": {
     "pages": [
       "/economy/nationalaccounts/balanceofpayments/datasets/uktradecountrybycommodityimports",
