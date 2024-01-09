@@ -11,6 +11,14 @@ list_of_transforms = [
     "weekly-deaths-previous", "weekly-deaths", "wellbeing-estimates", "wellbeing-quarterly"
 ]
 
+# get platform name
+# hack to tell if using on network machine - windows implies on network
+if sys.platform.lower().startswith('win'):
+    verify = False
+    requests.packages.urllib3.disable_warnings()
+else:
+    verify = True
+
 class Transform:
     def __init__(self, dataset, **kwargs):
         """
@@ -50,7 +58,7 @@ class Transform:
         
     def _write_transform(self):
         # getting transform script
-        r = requests.get(self.transform_url)
+        r = requests.get(self.transform_url, verify=verify)
         if r.status_code == 404:
             raise Exception(f"{self.transform_url} raised a 404 error, does the transform exist for '{self.dataset}' on github")
         elif r.status_code != 200:
@@ -64,14 +72,14 @@ class Transform:
             print(f"transform script wrote as {self.transform_script}")
                  
         # getting any requirements
-        r = requests.get(self.requirements_url)
+        r = requests.get(self.requirements_url, verify=verify)
         if r.status_code == 200:
             requirements = r.text
             requirements = requirements.strip().split("\n")
     
             for module in requirements:
                 module_url = f"{TRANSFORM_URL}/modules/{module}/module.py"
-                module_r = requests.get(module_url)
+                module_r = requests.get(module_url, verify=verify)
                 if module_r.status_code != 200:
                     raise Exception(f"{module_url} raised a {module_r.status_code} error")
     
@@ -195,7 +203,7 @@ class SourceData:
         
         # download the file
         source_file = download_link.split('/')[-1]
-        r = requests.get(download_link, headers=self.user_agent)
+        r = requests.get(download_link, headers=self.user_agent, verify=verify)
         with open(f"{self.location}{source_file}", 'wb') as output:
             output.write(r.content)
         print(f"written {source_file}")
@@ -213,7 +221,7 @@ class SourceData:
 
     def _get_results(self, page):
         landing_page = f"{self.ons_landing_page}{page}"
-        r = requests.get(landing_page, headers=self.user_agent)
+        r = requests.get(landing_page, headers=self.user_agent, verify=verify)
         if r.status_code != 200:
             raise Exception(f"{self.ons_landing_page}{page} returned a {r.status_code} error")
         
@@ -386,7 +394,7 @@ class Base:
                 raise Exception("FLORENCE_PASSWORD not found in environment variables")
             login = {"email":email, "password":password}
 
-            r = requests.post(login_url, json=login)
+            r = requests.post(login_url, json=login, verify=verify)
             if r.status_code == 200:
                 access_token = r.text.strip('"')
                 self.access_token = access_token
@@ -419,16 +427,16 @@ class MetadataClient:
         Pulls latest csvw
         """
         editions_url = f"https://api.beta.ons.gov.uk/v1/datasets/{dataset_id}/editions/{edition}/versions"
-        items = requests.get(f"{editions_url}?limit=1000").json()['items']
+        items = requests.get(f"{editions_url}?limit=1000", verify=verify).json()['items']
         # get latest version number
         latest_version_number = items[0]['version']
         assert latest_version_number == len(items), f'Get_Latest_Version for /{dataset_id}/editions/{edition} - number of versions does not match latest version number'
         # get latest version URL
         url = f"{editions_url}/{str(latest_version_number)}"
         # get latest version data
-        latest_version = requests.get(url).json()
+        latest_version = requests.get(url, verify=verify).json()
         try:
-            csvw_response = requests.get(latest_version['downloads']['csvw']['href'])
+            csvw_response = requests.get(latest_version['downloads']['csvw']['href'], verify=verify)
             if csvw_response.status_code != 200:
                 print(f"csvw download failed with a {csvw_response.status_code} error")
                 return 
@@ -557,7 +565,7 @@ class CollectionClient(Base):
 
     def create_collection(self):
         for dataset_id in self.upload_dict.keys():
-            requests.post(self.collection_url, headers=self.headers, json={"name": self.upload_dict[dataset_id]['collection_name']})
+            requests.post(self.collection_url, headers=self.headers, json={"name": self.upload_dict[dataset_id]['collection_name']}, verify=verify)
             # does not return a 200, so check the collection was created, which
             # also finds the collection_id
             self._check_collection_exists(dataset_id)
@@ -573,7 +581,7 @@ class CollectionClient(Base):
     def _check_collection_exists(self, dataset_id):
         # TODO - check to make sure collection is empty
         self._get_collection_id(dataset_id)
-        r = requests.get(f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}", headers=self.headers)
+        r = requests.get(f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}", headers=self.headers, verify=verify)
         if r.status_code != 200:
             raise Exception(f"Collection '{self.upload_dict[dataset_id]['collection_name']}' not created - returned a {r.status_code} error")
         
@@ -592,7 +600,7 @@ class CollectionClient(Base):
 
     
     def _get_all_collections(self):
-        r = requests.get(f"{self.collection_url}s", headers=self.headers)
+        r = requests.get(f"{self.collection_url}s", headers=self.headers, verify=verify)
         collection_list = r.json()
         self.all_collections = collection_list
             
@@ -603,7 +611,8 @@ class CollectionClient(Base):
         r = requests.put(
             f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}", 
             headers=self.headers, 
-            json={"state": "Complete"}
+            json={"state": "Complete"}, 
+            verify=verify
             )
 
         if r.status_code == 200:
@@ -618,7 +627,8 @@ class CollectionClient(Base):
         r = requests.put(
             f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}",
             headers=self.headers,
-            json={"state": "Complete"}
+            json={"state": "Complete"}, 
+            verify=verify
         )
 
         if r.status_code == 200:
@@ -642,7 +652,7 @@ class RecipeClient(Base):
         if self.all_recipes:
             return self.all_recipes
         
-        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers)
+        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=verify)
 
         if r.status_code == 200:
             self.all_recipes = r.json()
@@ -727,13 +737,13 @@ class DatasetClient(Base, MetadataClient):
         
         dataset_jobs_api_url = f"{self.dataset_url}/jobs"
         
-        r = requests.get(dataset_jobs_api_url, headers=self.headers)
+        r = requests.get(dataset_jobs_api_url, headers=self.headers, verify=verify)
         if r.status_code == 200:
             whole_dict = r.json()
             total_count = whole_dict["total_count"]
             last_job_number = total_count - 1 # 0 indexing
             new_url = f"{dataset_jobs_api_url}?limit=1&offset={last_job_number}"
-            new_dict = requests.get(new_url, headers=self.headers).json()
+            new_dict = requests.get(new_url, headers=self.headers, verify=verify).json()
             self.lastest_job = new_dict['items'][0]
         else:
             raise Exception(
@@ -759,7 +769,7 @@ class DatasetClient(Base, MetadataClient):
             if self.upload_dict[dataset_id]['recipe_id']:
                 pass
         except:
-            r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers)
+            r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=verify)
 
             if r.status_code == 200:
                 all_recipes = r.json()
@@ -806,7 +816,7 @@ class DatasetClient(Base, MetadataClient):
                 ],
             }            
             
-            r = requests.post(f"{self.dataset_url}/jobs", headers=self.headers, json=payload)
+            r = requests.post(f"{self.dataset_url}/jobs", headers=self.headers, json=payload, verify=verify)
             if r.status_code == 201:
                 print("Job created successfully")
             else:
@@ -829,7 +839,7 @@ class DatasetClient(Base, MetadataClient):
     def _get_job_info(self, dataset_id):
         dataset_jobs_id_url = f"{self.dataset_url}/jobs/{self.upload_dict[dataset_id]['job_id']}"
 
-        r = requests.get(dataset_jobs_id_url, headers=self.headers)
+        r = requests.get(dataset_jobs_id_url, headers=self.headers, verify=verify)
         if r.status_code == 200:
             self.job_info_dict = r.json()
         else:
@@ -855,7 +865,8 @@ class DatasetClient(Base, MetadataClient):
             r = requests.put(
                 updating_state_of_job_url,
                 headers=self.headers,
-                json=updating_state_of_job_json
+                json=updating_state_of_job_json, 
+                verify=verify
             )
 
             if r.status_code != 200:
@@ -874,7 +885,7 @@ class DatasetClient(Base, MetadataClient):
         for dataset_id in self.upload_dict.keys():
             dataset_instance_url = f"{self.dataset_url}/instances?dataset={dataset_id}"
             
-            r = requests.get(dataset_instance_url, headers=self.headers)
+            r = requests.get(dataset_instance_url, headers=self.headers, verify=verify)
             if r.status_code != 200:
                 raise Exception(f"instance API returned a {r.status_code} on /instances?dataset={dataset_id}")
 
@@ -908,7 +919,7 @@ class DatasetClient(Base, MetadataClient):
         """
         instance_id_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_id_url, headers=self.headers)
+        r = requests.get(instance_id_url, headers=self.headers, verify=verify)
         if r.status_code != 200:
             raise Exception(
                 f"{instance_id_url} raised a {r.status_code} error"
@@ -957,7 +968,7 @@ class DatasetClient(Base, MetadataClient):
 
         dataset_url = f"{self.dataset_url}/datasets/{dataset_id}"
         
-        r = requests.put(dataset_url, headers=self.headers, json=metadata)
+        r = requests.put(dataset_url, headers=self.headers, json=metadata, verify=verify)
         if r.status_code != 200:
             print(f"Metadata not updated, returned a {r.status_code} error")
         else:
@@ -980,7 +991,8 @@ class DatasetClient(Base, MetadataClient):
             'edition':self.upload_dict[dataset_id]['edition'], 
             'state':'edition-confirmed', 
             'release_date':release_date
-            }
+            }, 
+            verify=verify
         )
 
         if r.status_code == 200:
@@ -1000,7 +1012,7 @@ class DatasetClient(Base, MetadataClient):
 
         instance_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_url, headers=self.headers)
+        r = requests.get(instance_url, headers=self.headers, verify=verify)
         if r.status_code != 200:
             raise Exception(f"/datasets/{dataset_id}/instances/{self.upload_dict[dataset_id]['instance_id']} returned a {r.status_code} error")
             
@@ -1029,7 +1041,7 @@ class DatasetClient(Base, MetadataClient):
             
             # making the request for each dimension separately
             dimension_url = f"{instance_url}/dimensions/{dimension}"
-            r = requests.put(dimension_url, headers=self.headers, json=new_dimension_info)
+            r = requests.put(dimension_url, headers=self.headers, json=new_dimension_info, verify=verify)
             
             if r.status_code != 200:
                 print(f"Dimension info not updated for {dimension}, returned a {r.status_code} error")
@@ -1060,7 +1072,7 @@ class DatasetClient(Base, MetadataClient):
         
         version_url = f"{self.dataset_url}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}"
         
-        r = requests.put(version_url, headers=self.headers, json=usage_notes_to_add)
+        r = requests.put(version_url, headers=self.headers, json=usage_notes_to_add, verify=verify)
         if r.status_code == 200:
             print('Usage notes added')
         else:
@@ -1114,7 +1126,7 @@ class UploadClient(Base):
                 }
                 
                 # making the POST request
-                r = requests.post(self.upload_url, headers=self.headers, params=params, files=files)
+                r = requests.post(self.upload_url, headers=self.headers, params=params, files=files, verify=verify)
                 if r.status_code != 200:  
                     raise Exception(f"{self.upload_url} returned error {r.status_code}")
                     
@@ -1367,7 +1379,7 @@ class AsheCombiner:
     def _write_latest_version_script(self):
         # getting the script
         module_url = f"{TRANSFORM_URL}/modules/latest-version/module.py"
-        module_r = requests.get(module_url)
+        module_r = requests.get(module_url, verify=verify)
         if module_r.status_code != 200:
             raise Exception(f"{module_url} raised a {module_r.status_code} error")
         
@@ -1436,7 +1448,7 @@ class AsheTransform:
         
     def _write_transform(self):
         # getting transform script
-        r = requests.get(self.transform_url)
+        r = requests.get(self.transform_url, verify=verify)
         if r.status_code == 404:
             raise Exception(f"{self.transform_url} raised a 404 error, does the transform exist for '{self.dataset}' on github")
         elif r.status_code != 200:
@@ -1450,14 +1462,14 @@ class AsheTransform:
             print(f"transform script wrote as {self.transform_script}")
         
         # getting any requirements
-        r = requests.get(self.requirements_url)
+        r = requests.get(self.requirements_url, verify=verify)
         if r.status_code == 200:
             requirements = r.text
             requirements = requirements.strip().split("\n")
     
             for module in requirements:
                 module_url = f"{TRANSFORM_URL}/modules/{module}/module.py"
-                module_r = requests.get(module_url)
+                module_r = requests.get(module_url, verify=verify)
                 if module_r.status_code != 200:
                     raise Exception(f"{module_url} raised a {module_r.status_code} error")
     
@@ -1622,7 +1634,7 @@ class AsheSourceData:
         
         # download the file
         source_file = download_link.split('/')[-1]
-        r = requests.get(download_link, headers=self.user_agent)
+        r = requests.get(download_link, headers=self.user_agent, verify=verify)
         with open(f"{source_file}", 'wb') as output:
             output.write(r.content)
         print(f"written {source_file}")
@@ -1640,7 +1652,7 @@ class AsheSourceData:
             
     def _get_results(self, page):
         landing_page = f"{self.ons_landing_page}{page}"
-        r = requests.get(landing_page, headers=self.user_agent)
+        r = requests.get(landing_page, headers=self.user_agent, verify=verify)
         if r.status_code != 200:
             raise Exception(f"{self.ons_landing_page}{page} returned a {r.status_code} error")
         
