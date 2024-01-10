@@ -15,9 +15,11 @@ list_of_transforms = [
 # hack to tell if using on network machine - windows implies on network
 if sys.platform.lower().startswith('win'):
     verify = False
+    operating_system = 'windows'
     requests.packages.urllib3.disable_warnings()
 else:
     verify = True
+    operating_system = 'not windows'
 
 class Transform:
     def __init__(self, dataset, **kwargs):
@@ -365,8 +367,15 @@ class TransformLocal:
 class Base:
     def __init__(self, **kwargs):
         # defining url's
-        self.url = "http://localhost:10800/v1"
-        self.dataset_url = self.url
+        if operating_system == 'windows':
+            self.url = "http://localhost:10800/v1"
+            self.dataset_url = self.url
+            self.login_url = f"{self.url}/login"
+        else:
+            self.url = 'https://publishing.dp-prod.aws.onsdigitial.uk'
+            self.dataset_url = f"{self.url}/dataset"
+            self.login_url = f"{self.url}/zebedee/login"
+        
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
         self.upload_url = f"{self.url}/upload"
@@ -382,25 +391,31 @@ class Base:
             if self.access_token: 
                 pass
         except:
-        
-            login_url = f"{self.url}/login"
-
             # getting credential from environment variables
-            email = os.getenv('FLORENCE_EMAIL')
-            if not email:
-                raise Exception("FLORENCE_EMAIL not found in environment variables")
-            password = os.getenv('FLORENCE_PASSWORD')
-            if not password:
-                raise Exception("FLORENCE_PASSWORD not found in environment variables")
+            email, password = self._get_credentials()
             login = {"email":email, "password":password}
 
-            r = requests.post(login_url, json=login, verify=verify)
+            r = requests.post(self.login_url, json=login, verify=verify)
             if r.status_code == 200:
                 access_token = r.text.strip('"')
                 self.access_token = access_token
             else:
                 raise Exception(f"Token not created, returned a {r.status_code} error")
             
+    def _get_credentials(self):
+        email = os.getenv('FLORENCE_EMAIL')
+        password = os.getenv('FLORENCE_PASSWORD')
+        if email and password:
+            pass
+
+        else:
+            print("Florence credentials not found in environment variables")
+            print("Will need to be passed")
+
+            email = input("Florence email: ")
+            password = input("Florence password: ")
+
+        return email, password
     
     def _assign(self, upload_dict):
         # assigns the upload_dict as a class variable
