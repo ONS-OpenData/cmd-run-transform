@@ -368,13 +368,14 @@ class Base:
     def __init__(self, **kwargs):
         # defining url's
         if operating_system == 'windows':
-            self.url = "http://localhost:10800/v1"
-            self.dataset_url = self.url
-            self.login_url = f"{self.url}/login"
-        else:
             self.url = 'https://publishing.dp-prod.aws.onsdigitial.uk'
             self.dataset_url = f"{self.url}/dataset"
             self.login_url = f"{self.url}/zebedee/login"
+            
+        else:
+            self.url = "http://localhost:10800/v1"
+            self.dataset_url = self.url
+            self.login_url = f"{self.url}/login"
         
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
