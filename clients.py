@@ -1,4 +1,4 @@
-import requests, os, glob, sys, json, datetime, time, zipfile, sys
+import requests, os, glob, sys, json, datetime, time, zipfile
 from bs4 import BeautifulSoup
 import pandas as pd
 
