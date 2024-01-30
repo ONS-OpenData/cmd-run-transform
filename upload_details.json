@@ -72,7 +72,7 @@
     "collection_name": "CMD labour market rolling quarters"
   },
   "mid-year-pop-est": {
-    "edition": "mid-2022-april-2023-geography",
+    "edition": "mid-2022-england-wales",
     "collection_name": "CMD mid year pop est"
   },
   "online-job-advert-estimates": {
@@ -127,28 +127,20 @@
     "edition": "time-series",
     "collection_name": "CMD uk spending on cards"
   },
-  "weekly-deaths-health-board": {
-    "edition": "2023",
-    "collection_name": "CMD weekly deaths by health board"
-  },
   "weekly-deaths-health-board-previous": {
-    "edition": "2022",
+    "edition": "2023",
     "collection_name": "CMD weekly deaths by health board"
   },
   "weekly-deaths-age-sex": {
-    "edition": "covid-19",
+    "edition": "time-series",
     "collection_name": "CMD weekly deaths by age and sex"
   },
   "weekly-deaths-region": {
-    "edition": "covid-19",
+    "edition": "time-series",
     "collection_name": "CMD weekly deaths by region"
   },
-  "weekly-deaths-local-authority": {
-    "edition": "2023",
-    "collection_name": "CMD weekly deaths by local authority"
-  },
   "weekly-deaths-local-authority-previous": {
-    "edition": "2022",
+    "edition": "2023",
     "collection_name": "CMD weekly deaths by local authority"
   },
   "wellbeing-local-authority": {
