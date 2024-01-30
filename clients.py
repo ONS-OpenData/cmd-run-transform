@@ -1315,6 +1315,13 @@ class V4Checker(Base):
         assert type(transform_outputs) == dict, f"V4Checker imput must be a dict, got '{type(transform_outputs)}'"
         self.transform_outputs = transform_outputs
         self.code_list_api_url = "https://api.beta.ons.gov.uk/v1/code-lists"
+
+        # get user-agent
+        email = os.getenv('FLORENCE_EMAIL')
+        if not email:
+            email = 'cmd@ons.gov.uk' # generic cmd email
+
+        self.user_agent = {"User-Agent": f"cmd-run-transforms/Version1.0.0 ONS {email}"}
         
     def run_check(self):
         print("---")
@@ -1384,14 +1391,14 @@ class V4Checker(Base):
         # checks options in a dimension appear in the code list api
         # only checks codes not labels
         codelist_url = f"{self.code_list_api_url}/{codelist_id}/editions/one-off/codes"
-        codelist_dict = requests.get(codelist_url).json()
+        codelist_dict = requests.get(codelist_url, headers=self.user_agent, verify=verify).json()
         total_count = codelist_dict['total_count'] 
         
         codes_list = []
         
         if total_count <= 1000:
             new_url = f"{codelist_url}?limit=1000"
-            whole_codelist_dict = requests.get(new_url).json()
+            whole_codelist_dict = requests.get(new_url, headers=self.user_agent, verify=verify).json()
             for item in whole_codelist_dict['items']:
                 codes_list.append(item['code'])
                 
@@ -1400,7 +1407,7 @@ class V4Checker(Base):
             offset = 0
             for i in range(number_of_iterations):
                 new_url = f"{codelist_url}?limit=1000&offset={offset}"
-                whole_codelist_dict = requests.get(new_url).json()
+                whole_codelist_dict = requests.get(new_url, headers=self.user_agent, verify=verify).json()
                 for item in whole_codelist_dict['items']:
                     codes_list.append(item['code'])
                 offset += 1000
