@@ -1,4 +1,4 @@
-from clients import (Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData, ClearRepo, list_of_transforms, 
+from clients import (Transform, TransformLocal, UploadToCmd, UploadDetails, SourceData, ClearRepo, list_of_transforms, V4Checker, 
                      AsheSourceData, AsheTransform, AsheCombiner, ashe_number_lookup, provisional_or_revised_lookup, time_series_ashe_tables)
 import argparse
 
@@ -55,7 +55,12 @@ for dataset in datasets:
         source_data.get_source_files()
 
         transform = AsheTransform(table_number, year_of_data=year_of_data)
-        transform.run_transform()
+
+        if run_locally:
+            transform.run_transform_local()
+        else:
+            transform.run_transform()
+        
         transform_output.update(transform.transform_output)
 
         combiner = AsheCombiner(table_number, transform_output[table_number])
@@ -80,6 +85,10 @@ for dataset in datasets:
 
 # uploading data
 if upload == True:
+    # validate v4s
+    validate_object = V4Checker(transform_output)
+    validate_object.run_check()
+
     # creating upload_dict
     if dataset == 'ashe':
         upload_dict = UploadDetails(transform_output, location=location, edition=edition).create()
@@ -90,6 +99,10 @@ if upload == True:
     upload.run_upload()
 
 elif upload == 'partial':
+    # validate v4s
+    validate_object = V4Checker(transform_output)
+    validate_object.run_check()
+
     # creating upload_dict
     print('running partial upload')
     if dataset == 'ashe':
