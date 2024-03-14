@@ -416,6 +416,11 @@ class Base:
             email = input("Florence email: ")
             password = input("Florence password: ")
 
+            # will set temporary env variables on network machines
+            # so that will only be asked for details once
+            os.environ["FLORENCE_EMAIL"] = email
+            os.environ["FLORENCE_PASSWORD"] = password
+
         return email, password
     
     def _assign(self, upload_dict):
