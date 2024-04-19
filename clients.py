@@ -1,4 +1,4 @@
-import requests, os, glob, sys, json, datetime, time, zipfile, math
+import requests, os, glob, sys, json, datetime, time, zipfile, math, getpass
 from bs4 import BeautifulSoup
 import pandas as pd
 
@@ -370,38 +370,160 @@ class Base:
         if operating_system == 'windows':
             self.url = 'https://publishing.dp-prod.aws.onsdigital.uk'
             self.dataset_url = f"{self.url}/dataset"
-            self.login_url = f"{self.url}/zebedee/login"
             
         else:
             self.url = "http://localhost:10800/v1"
             self.dataset_url = self.url
-            self.login_url = f"{self.url}/login"
-        
+            
+        self.token_url = f"{self.url}/tokens"
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
         self.upload_url = f"{self.url}/upload"
         
         # assigning variables
         self._get_access_token()
-        self.headers = {"X-Florence-Token": self.access_token}
         
+    def http_request(self, request_type, url, **kwargs):
+        if 'refresh_token' in kwargs:
+            # do not want to check if token needs refreshing when trying to refresh 
+            # the token, would cause an infinite loop
+            reponse_dict = self._put_request(url, **kwargs)
+        
+        else:
+            # check if token needs refreshing
+            self._check_access_token()
+            
+            if request_type.lower() == 'get':
+                reponse_dict = self._get_request(url)
+                
+            elif request_type.lower() == 'put':
+                reponse_dict = self._put_request(url, **kwargs)
+                
+            elif request_type.lower() == 'post':
+                reponse_dict = self._post_request(url, **kwargs)
+            
+            else:
+                raise NotImplementedError(f"No request built for {request_type.lower()}")
+            
+        return reponse_dict
     
+    def _get_request(self, url, **kwargs):
+        r = requests.get(url, headers=self.headers, verify=verify)
+        status_code = r.status_code
+        response_dict = r.json()
+        
+        return {
+            'status_code': status_code, 
+            'response_dict': response_dict
+            }
+    
+    def _put_request(self, url, **kwargs):
+        if 'refresh_token' in kwargs:
+            # refreshing token request is different to other put requests
+            headers = {"ID": self.headers['ID'], "Refresh": self.refresh_token}
+            r = requests.put(url, headers=headers, verify=verify)
+            status_code = r.status_code
+            
+            return {
+                'status_code': status_code,
+                'response': r
+                }
+        
+        else: 
+            # all put requests should have a json request header
+            json_header = kwargs['json']
+            r = requests.put(url, json=json_header, headers=self.headers, verify=verify)
+            status_code = r.status_code
+            
+            return {
+                'status_code': status_code
+                }
+    
+    def _post_request(self, url, **kwargs):
+        if 'get_access_token' in kwargs:
+            login = kwargs['login']
+            r = requests.post(url, json=login)
+            status_code = r.status_code
+            
+            return {
+                'status_code': status_code,
+                'response': r
+                }
+        
+        elif 'json' in kwargs:
+            # most post requests only pass on json as request header
+            json_header = kwargs['json']
+            r = requests.post(url, json=json_header, headers=self.headers, verify=verify)
+            status_code = r.status_code
+        
+        elif 'params' in kwargs and 'files' in kwargs:
+            # uploading chunks uses these request headers
+            params_dict = kwargs['params']
+            files_dict = kwargs['files']
+            r = requests.post(url, params=params_dict, files=files_dict, headers=self.headers, verify=verify)
+            status_code = r.status_code
+        
+        return {
+            'status_code': status_code
+            }
+
     def _get_access_token(self):
         # gets florence access token
         try: # so that token isn't generate for each __init__
-            if self.access_token: 
+            if self.headers['X-Florence-Token']:
                 pass
         except:
+            print("Generating access tokens")
             # getting credential from environment variables
             email, password = self._get_credentials()
-            login = {"email":email, "password":password}
+            login = {"email": email, "password": password}
+            response_dict = self.http_request('post', self.token_url, login=login, get_access_token=True)
+            if response_dict['status_code'] == 201:
+                response_headers = response_dict['response'].headers
+                response_content = response_dict['response'].content
+                
+                auth_token = response_headers["Authorization"]
+                id_token = response_headers["ID"]
+                self.refresh_token = response_headers["Refresh"]
+                
+                content_json = json.loads(response_content.decode("utf-8"))
+                token_expiration_time = content_json["expirationTime"]
+                # currently using a timer to decide when token needs refreshing
+                self.token_start_time = datetime.datetime.now()
+                refresh_token_expiration_time = content_json["refreshTokenExpirationTime"]
+                
+                self.headers = {"X-Florence-Token": auth_token, "ID": id_token}
 
-            r = requests.post(self.login_url, json=login, verify=verify)
-            if r.status_code == 200:
-                access_token = r.text.strip('"')
-                self.access_token = access_token
             else:
-                raise Exception(f"Token not created, returned a {r.status_code} error")
+                raise Exception(f"Token not created, returned a {response_dict['status_code']} error")
+                
+    def _refresh_access_token(self):
+        print("Refreshing access tokens")
+        # makes a put request to refresh
+        response_dict = self.http_request('put', f"{self.token_url}/self", refresh_token=True)
+        if response_dict['status_code'] == 201:
+            response_headers = response_dict['response'].headers
+            response_text = response_dict['response'].text
+            
+            auth_token = response_headers["Authorization"]
+            id_token = response_headers["ID"]
+            token_expiration_time = json.loads(response_text)['expirationTime']
+            self.token_start_time = datetime.datetime.now()
+            
+            self.headers = {"X-Florence-Token": auth_token, "ID": id_token}
+            
+        else:
+            raise Exception(f"Refreshing token failed, returned a {response_dict['status_code']} error")
+            
+    def _check_access_token(self):
+        # checks if the access token needs refreshing
+        try:
+            self.token_start_time
+            refresh_time = 10 # will refresh if token is more than 10 minutes old
+            if datetime.datetime.now() - self.token_start_time > datetime.timedelta(minutes=refresh_time):
+                self._refresh_access_token()
+        except:
+            return
             
     def _get_credentials(self):
         email = os.getenv('FLORENCE_EMAIL')
@@ -414,7 +536,7 @@ class Base:
             print("Will need to be passed")
 
             email = input("Florence email: ")
-            password = input("Florence password: ")
+            password = getpass.getpass(prompt="Florence password: ")
 
             # will set temporary env variables on network machines
             # so that will only be asked for details once
@@ -586,7 +708,8 @@ class CollectionClient(Base):
 
     def create_collection(self):
         for dataset_id in self.upload_dict.keys():
-            requests.post(self.collection_url, headers=self.headers, json={"name": self.upload_dict[dataset_id]['collection_name']}, verify=verify)
+            payload = {"name": self.upload_dict[dataset_id]['collection_name']}
+            response = self.http_request('post', self.collection_url, json=payload)
             # does not return a 200, so check the collection was created, which
             # also finds the collection_id
             self._check_collection_exists(dataset_id)
@@ -602,9 +725,9 @@ class CollectionClient(Base):
     def _check_collection_exists(self, dataset_id):
         # TODO - check to make sure collection is empty
         self._get_collection_id(dataset_id)
-        r = requests.get(f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}", headers=self.headers, verify=verify)
-        if r.status_code != 200:
-            raise Exception(f"Collection '{self.upload_dict[dataset_id]['collection_name']}' not created - returned a {r.status_code} error")
+        response = self.http_request('get', f"{self.collection_url}/{self.upload_dict[dataset_id]['collection_id']}")
+        if response['status_code'] != 200:
+            raise Exception(f"Collection '{self.upload_dict[dataset_id]['collection_name']}' not created - returned a {response['status_code']} error")
         
     
     def _get_collection_id(self, dataset_id):
@@ -621,41 +744,35 @@ class CollectionClient(Base):
 
     
     def _get_all_collections(self):
-        r = requests.get(f"{self.collection_url}s", headers=self.headers, verify=verify)
-        collection_list = r.json()
+        response = self.http_request('get', f"{self.collection_url}s")
+        collection_list = response['response_dict']
         self.all_collections = collection_list
             
 
     def _add_dataset_to_collection(self, dataset_id):
         # Adds dataset landing page to a collection
         
-        r = requests.put(
-            f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}", 
-            headers=self.headers, 
-            json={"state": "Complete"}, 
-            verify=verify
-            )
+        payload = {"state": "Complete"}
+        url = f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}"
+        response = self.http_request('put', url, json=payload)
 
-        if r.status_code == 200:
+        if response['status_code'] == 200:
             print(f"{dataset_id} - Dataset landing page added to collection")
         else:
-            raise Exception(f"{dataset_id} - Dataset landing page not added to collection - returned a {r.status_code} error")
+            raise Exception(f"{dataset_id} - Dataset landing page not added to collection - returned a {response['status_code']} error")
         
 
     def _add_dataset_version_to_collection(self, dataset_id):
         # Adds dataset version to a collection
 
-        r = requests.put(
-            f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}",
-            headers=self.headers,
-            json={"state": "Complete"}, 
-            verify=verify
-        )
+        payload = {"state": "Complete"}
+        url = f"{self.collection_url}s/{self.upload_dict[dataset_id]['collection_id']}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}"
+        response = self.http_request('put', url, json=payload)
 
-        if r.status_code == 200:
+        if response['status_code'] == 200:
             print(f"{dataset_id} - Dataset version '{self.upload_dict[dataset_id]['version_number']}' added to collection")
         else:
-            raise Exception(f"{dataset_id} - Dataset version '{self.upload_dict[dataset_id]['version_number']}' not added to collection - returned a {r.status_code} error")
+            raise Exception(f"{dataset_id} - Dataset version '{self.upload_dict[dataset_id]['version_number']}' not added to collection - returned a {response['status_code']} error")
         
 
 class RecipeClient(Base):
@@ -673,14 +790,13 @@ class RecipeClient(Base):
         if self.all_recipes:
             return self.all_recipes
         
-        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=verify)
+        response = self.http_request('get', f"{self.recipe_url}?limit=1000")
 
-        if r.status_code == 200:
-            self.all_recipes = r.json()
+        if response['status_code'] == 200:
+            self.all_recipes = response['response_dict']
         else:
-            raise Exception(f"Recipe API returned a {r.status_code} error")
+            raise Exception(f"Recipe API returned a {response['status_code']} error")
         
-    
     
     def _check_recipe_exists(self, dataset_id):
         """
@@ -758,17 +874,19 @@ class DatasetClient(Base, MetadataClient):
         
         dataset_jobs_api_url = f"{self.dataset_url}/jobs"
         
-        r = requests.get(dataset_jobs_api_url, headers=self.headers, verify=verify)
-        if r.status_code == 200:
-            whole_dict = r.json()
+        response = self.http_request('get', dataset_jobs_api_url)
+        if response['status_code'] == 200:
+            whole_dict = response['response_dict']
             total_count = whole_dict["total_count"]
             last_job_number = total_count - 1 # 0 indexing
+
             new_url = f"{dataset_jobs_api_url}?limit=1&offset={last_job_number}"
-            new_dict = requests.get(new_url, headers=self.headers, verify=verify).json()
+            new_response = self.http_request('get', new_url)
+            new_dict = new_response['response_dict']
             self.lastest_job = new_dict['items'][0]
         else:
             raise Exception(
-                f"/dataset/jobs API returned a {r.status_code} error"
+                f"/dataset/jobs API returned a {response['status_code']} error"
             )
         
     
@@ -790,12 +908,12 @@ class DatasetClient(Base, MetadataClient):
             if self.upload_dict[dataset_id]['recipe_id']:
                 pass
         except:
-            r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=verify)
+            response = self.http_request('get', f"{self.recipe_url}?limit=1000")
 
-            if r.status_code == 200:
-                all_recipes = r.json()
+            if response['status_code'] == 200:
+                all_recipes = response['response_dict']
             else:
-                raise Exception(f"Recipe API returned a {r.status_code} error")
+                raise Exception(f"Recipe API returned a {response['status_code']} error")
             
             for item in all_recipes["items"]:
                 # hack around incorrect recipe in database
@@ -837,11 +955,11 @@ class DatasetClient(Base, MetadataClient):
                 ],
             }            
             
-            r = requests.post(f"{self.dataset_url}/jobs", headers=self.headers, json=payload, verify=verify)
-            if r.status_code == 201:
+            response = self.http_request('post', f"{self.dataset_url}/jobs", json=payload)
+            if response['status_code'] == 201:
                 print("Job created successfully")
             else:
-                raise Exception(f"Job not created, returning status code: {r.status_code}")
+                raise Exception(f"Job not created, returning status code: {response['status_code']}")
             
     
             # return job ID
@@ -860,11 +978,11 @@ class DatasetClient(Base, MetadataClient):
     def _get_job_info(self, dataset_id):
         dataset_jobs_id_url = f"{self.dataset_url}/jobs/{self.upload_dict[dataset_id]['job_id']}"
 
-        r = requests.get(dataset_jobs_id_url, headers=self.headers, verify=verify)
-        if r.status_code == 200:
-            self.job_info_dict = r.json()
+        response = self.http_request('get', dataset_jobs_id_url)
+        if response['status_code'] == 200:
+            self.job_info_dict = response['response_dict']
         else:
-            raise Exception(f"/dataset/jobs/{self.job_id} returned error {r.status_code}")
+            raise Exception(f"/dataset/jobs/{self.job_id} returned error {response['status_code']}")
             
     
     def _update_state_of_job(self, dataset_id):
@@ -883,14 +1001,9 @@ class DatasetClient(Base, MetadataClient):
 
         if len(self.job_info_dict["files"]) != 0:
             print("Updating state of job")
-            r = requests.put(
-                updating_state_of_job_url,
-                headers=self.headers,
-                json=updating_state_of_job_json, 
-                verify=verify
-            )
+            response = self.http_request('put', updating_state_of_job_url, json=updating_state_of_job_json)
 
-            if r.status_code != 200:
+            if response['status_code'] != 200:
                 raise Exception(f"Unable to update job for {dataset_id} to submitted state")
         else:
             raise Exception(f"Job for {dataset_id} does not have a v4 file!")
@@ -906,11 +1019,11 @@ class DatasetClient(Base, MetadataClient):
         for dataset_id in self.upload_dict.keys():
             dataset_instance_url = f"{self.dataset_url}/instances?dataset={dataset_id}"
             
-            r = requests.get(dataset_instance_url, headers=self.headers, verify=verify)
-            if r.status_code != 200:
-                raise Exception(f"instance API returned a {r.status_code} on /instances?dataset={dataset_id}")
+            response = self.http_request('get', dataset_instance_url)
+            if response['status_code'] != 200:
+                raise Exception(f"instance API returned a {response['status_code']} on /instances?dataset={dataset_id}")
 
-            response_dict = r.json()
+            response_dict = response['response_dict']
             latest_instance = response_dict['items'][0]
             # check to make sure dates match
             current_date = datetime.datetime.now()
@@ -940,13 +1053,13 @@ class DatasetClient(Base, MetadataClient):
         """
         instance_id_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_id_url, headers=self.headers, verify=verify)
-        if r.status_code != 200:
+        response = self.http_request('get', instance_id_url)
+        if response['status_code'] != 200:
             raise Exception(
-                f"{instance_id_url} raised a {r.status_code} error"
+                f"{instance_id_url} raised a {response['status_code']} error"
             )
 
-        dataset_instance_dict = r.json()
+        dataset_instance_dict = response['response_dict']
         job_state = dataset_instance_dict["state"]
         
         if job_state == "created":
@@ -989,9 +1102,9 @@ class DatasetClient(Base, MetadataClient):
 
         dataset_url = f"{self.dataset_url}/datasets/{dataset_id}"
         
-        r = requests.put(dataset_url, headers=self.headers, json=metadata, verify=verify)
-        if r.status_code != 200:
-            print(f"Metadata not updated, returned a {r.status_code} error")
+        response = self.http_request('put', dataset_url, json=metadata)
+        if response['status_code'] != 200:
+            print(f"Metadata not updated, returned a {response['status_code']} error")
         else:
             print('Metadata updated')
             
@@ -1007,20 +1120,19 @@ class DatasetClient(Base, MetadataClient):
 
         current_date = datetime.datetime.now()
         release_date = datetime.datetime.strftime(current_date, '%Y-%m-%dT00:00:00.000Z')
-        
-        r = requests.put(instance_url, headers=self.headers, json={
+        payload={
             'edition':self.upload_dict[dataset_id]['edition'], 
             'state':'edition-confirmed', 
             'release_date':release_date
-            }, 
-            verify=verify
-        )
+            }
+        
+        response = self.http_request('put', instance_url, json=payload)
 
-        if r.status_code == 200:
+        if response['status_code'] == 200:
             print('Instance state changed to edition-confirmed')
             self._get_version_number(dataset_id)
         else:
-            raise Exception(f"{dataset_id} - Instance state not changed - returned a {r.status_code} error")
+            raise Exception(f"{dataset_id} - Instance state not changed - returned a {response['status_code']} error")
 
 
     def _get_version_number(self, dataset_id):
@@ -1033,11 +1145,11 @@ class DatasetClient(Base, MetadataClient):
 
         instance_url = f"{self.dataset_url}/instances/{self.upload_dict[dataset_id]['instance_id']}"
 
-        r = requests.get(instance_url, headers=self.headers, verify=verify)
-        if r.status_code != 200:
-            raise Exception(f"/datasets/{dataset_id}/instances/{self.upload_dict[dataset_id]['instance_id']} returned a {r.status_code} error")
+        response = self.http_request('get', instance_url)
+        if response['status_code'] != 200:
+            raise Exception(f"/datasets/{dataset_id}/instances/{self.upload_dict[dataset_id]['instance_id']} returned a {response['status_code']} error")
             
-        instance_dict = r.json()
+        instance_dict = response['response_dict']
         self.upload_dict[dataset_id]['version_number'] = instance_dict['version']
         
         # check to make sure is the right dataset
@@ -1062,10 +1174,10 @@ class DatasetClient(Base, MetadataClient):
             
             # making the request for each dimension separately
             dimension_url = f"{instance_url}/dimensions/{dimension}"
-            r = requests.put(dimension_url, headers=self.headers, json=new_dimension_info, verify=verify)
+            response = self.http_request('put', dimension_url, json=new_dimension_info)
             
-            if r.status_code != 200:
-                print(f"Dimension info not updated for {dimension}, returned a {r.status_code} error")
+            if response['status_code'] != 200:
+                print(f"Dimension info not updated for {dimension}, returned a {response['status_code']} error")
             else:
                 print(f"Dimension updated - {dimension}")
         
@@ -1093,11 +1205,11 @@ class DatasetClient(Base, MetadataClient):
         
         version_url = f"{self.dataset_url}/datasets/{dataset_id}/editions/{self.upload_dict[dataset_id]['edition']}/versions/{self.upload_dict[dataset_id]['version_number']}"
         
-        r = requests.put(version_url, headers=self.headers, json=usage_notes_to_add, verify=verify)
-        if r.status_code == 200:
+        response = self.http_request('put', version_url, json=usage_notes_to_add)
+        if response['status_code'] == 200:
             print('Usage notes added')
         else:
-            print(f"Usage notes not added, returned a {r.status_code} error")
+            print(f"Usage notes not added, returned a {response['status_code']} error")
             
 
 class UploadClient(Base):
@@ -1147,9 +1259,9 @@ class UploadClient(Base):
                 }
                 
                 # making the POST request
-                r = requests.post(self.upload_url, headers=self.headers, params=params, files=files, verify=verify)
-                if r.status_code != 200:  
-                    raise Exception(f"{self.upload_url} returned error {r.status_code}")
+                response = self.http_request('post', self.upload_url, params=params, files=files)
+                if response['status_code'] != 200:  
+                    raise Exception(f"{self.upload_url} returned error {response['status_code']}")
                     
                 print(f"tmp file number - {chunk_number} posted")
                 chunk_number += 1 # moving onto next chunk number
@@ -1375,11 +1487,11 @@ class V4Checker(Base):
     def _get_dimensions_from_recipe(self):
         # gets recipe from recipe api
         # assigns code list id's to self.recipe_codelists
-        r = requests.get(f"{self.recipe_url}?limit=1000", headers=self.headers, verify=verify)
-        if r.status_code == 200:
-            all_recipes = r.json()
+        response = self.http_request('get', f"{self.recipe_url}?limit=1000")
+        if response['status_code'] == 200:
+            all_recipes = response['response_dict']
         else:
-            raise Exception(f"Recipe API returned a {r.status_code} error")
+            raise Exception(f"Recipe API returned a {response['status_code']} error")
         
         self.recipe_codelists = []
         for item in all_recipes["items"]:
