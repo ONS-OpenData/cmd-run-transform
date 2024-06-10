@@ -4,6 +4,14 @@ from clients.base_client import Base
 from metadata_client import MetadataClient
 
 class DatasetClient(Base, MetadataClient):
+    """
+    Uses Base and MetadataClient as parent classes
+    Client is responsible for creating a new job in the dataset api, updating the state of that job
+    and monitoring the state of the import in the instance api. Will then update the state of the 
+    instance (which assigns the instance a version number)
+    Also updates the metadata of the new version, includes dataset metadata, dimension metadata & usage 
+    notes.
+    """
     def __init__(self, upload_dict, **kwargs):
         Base.__init__(self, **kwargs)
         self._assign(upload_dict)

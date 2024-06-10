@@ -3,6 +3,10 @@ import requests, os, json, datetime, getpass
 from get_platform import verify, operating_system
 
 class Base:
+    """
+    Client used for handling http requests to the cmd apis
+    Also used for generating the access tokens to Florence and keeping them updated
+    """
     def __init__(self, **kwargs):
         # defining url's
         if operating_system == 'windows':

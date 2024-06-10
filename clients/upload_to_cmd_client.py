@@ -9,6 +9,15 @@ class UploadToCmd(
         DatasetClient, 
         UploadClient
         ):
+    """
+    Uses CollectionClient, RecipeClient, DatasetClient, UploadClient as parent classes
+    Client is responsible for running the full upload process, from taking a v4 all the way to 
+    adding it to a collection ready to be published
+    Can run a partial upload where it stops after monitoring the v4 has been uploaded into 
+    CMD, this is useful when uploading a new dataset as the process is slightly different after this point
+    Can also run adding a dataset to a collection, useful for very large datasets that have been left to
+    upload, instead of adding dataset to collection manually this can be used
+    """
     
     def __init__(self, upload_dict, **kwargs):
         for key in upload_dict:

@@ -1,8 +1,10 @@
 import json
 
-# TODO upload details
-
 class UploadDetails:
+    """
+    Client responsible for getting the required upload details for a given dataset
+    i.e. collection name and edition
+    """
     def __init__(self, transform_output, **kwargs):
         if 'edition' in kwargs.keys():
             # currently only useful for ashe datasets

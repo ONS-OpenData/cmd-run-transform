@@ -1,6 +1,11 @@
 from clients.base_client import Base
 
 class RecipeClient(Base):
+    """
+    Uses Base as a parent class
+    Client responsible for interacting with the recipe api.
+    Mainly to check that a recipe exists in the api and also to return a specific recipe
+    """
     def __init__(self, upload_dict, **kwargs):
         Base.__init__(self, **kwargs)
         self._assign(upload_dict)

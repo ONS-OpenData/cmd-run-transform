@@ -3,6 +3,12 @@ import os, datetime, time
 from clients.base_client import Base
 
 class UploadClient(Base):
+    """
+    Uses Base as a parent client
+    Client responsible for uploading v4 to the upload api
+    Chunks a v4 into correct sized chunks, posts one chunk at a time to api, then
+    deletes all chunks
+    """
     def __init__(self, upload_dict, **kwargs):
         Base.__init__(self, **kwargs)
         self._assign(upload_dict)

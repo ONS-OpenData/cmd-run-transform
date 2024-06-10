@@ -5,6 +5,13 @@ from base_client import Base
 from get_platform import verify
 
 class V4Checker(Base):
+    """
+    Uses Base as a parent class
+    CLient responsible for validating v4
+    Checks v4 does not contain any sparisty
+    Checks code lists found in v4 are in the recipe and then checks that the options
+    within each code list are found in the code list api
+    """
     def __init__(self, transform_outputs, **kwargs):
         # Base as child class to access recipe API
         Base.__init__(self, **kwargs)

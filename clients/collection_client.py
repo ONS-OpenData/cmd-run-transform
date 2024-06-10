@@ -3,6 +3,11 @@ import time
 from clients.base_client import Base
 
 class CollectionClient(Base):   
+    """
+    Uses Base as a parent class
+    Client is responsible for creating a collection within Florence
+    Also handles adding datasets and landing pages to the collections
+    """
     def __init__(self, upload_dict, **kwargs):
         Base.__init__(self, **kwargs)
         self._assign(upload_dict)

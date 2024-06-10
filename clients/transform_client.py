@@ -12,6 +12,13 @@ list_of_transforms = [
 ]
 
 class Transform:
+    """
+    Client used to run cmd transforms
+    Picks up all files (some exceptions) within base directory - can specify source files directly
+    if required
+    Picks up the transform from TRANSFORM_URL, writes the file as a .py, runs the transform
+    using the source files, then deletes the transform .py file
+    """
     def __init__(self, dataset, **kwargs):
         self.dataset = dataset
         
@@ -109,9 +116,17 @@ class Transform:
         del sys.modules['temp_transform_script'] # causes issue with multipart transform if not deleted
 
 class TransformLocal:
-    # used to run the transforms that are saved locally
-    # useful when changes are made to transform
-    # will only work if the transformed are saved locally
+    """
+    Client used to run cmd transforms
+    Picks up all files (some exceptions) within base directory - can specify source files directly
+    if required
+    Picks up the transform locally ({self.path_to_local_transforms}/cmd-transforms), writes the 
+    file as a .py, runs the transform using the source files, then deletes the transform .py file
+    
+    used to run the transforms that are saved locally
+    useful when changes are made to transform
+    will only work if the transformed are saved locally
+    """
     def __init__(self, dataset, **kwargs):
         self.path_to_local_transforms = ".."
         

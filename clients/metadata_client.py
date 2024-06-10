@@ -2,7 +2,11 @@ import requests, json
 
 from get_platform import verify
 
-class MetadataClient:    
+class MetadataClient:
+    """
+    Client gets metadata from the latest published version of the dataset, then 
+    parses the metadata into a usable format for the DatasetClient
+    """
     def get_metadata(self, dataset_id, edition):
         try:
             if self.upload_dict[dataset_id]['metadata_dict']:

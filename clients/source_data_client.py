@@ -4,6 +4,15 @@ from bs4 import BeautifulSoup
 from get_platform import verify
 
 class SourceData:
+    """
+    Client resposible for getting source data used for cmd transforms
+    Uses landing_pages.json to get the landing page url for a given dataset and downloads
+    source file(s)
+    Checks the release date of the most recent source file publication to confirm 
+    it is correct  release - this can be ignored
+    Has built in functionality to download the latest version of a previous edition 
+    (ie previous years data), was used for weekly deaths
+    """
     def __init__(self, dataset, **kwargs):
         if 'ignore_release_date' in kwargs.keys():
             self.ignore_release_date = kwargs['ignore_release_date']
