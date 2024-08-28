@@ -10,6 +10,7 @@ from clients.upload_details_client import UploadDetails
 from clients.upload_to_cmd_client import UploadToCmd
 from clients.v4_checker_client import V4Checker
 from clients.clear_repo import ClearRepo
+from clients.send_email_client import EmailSender
 
 description = f'''Transform and upload program - transforms available as of 15/02/23:
 {list_of_transforms}
@@ -108,6 +109,9 @@ if upload == True:
     upload = UploadToCmd(upload_dict)
     upload.run_upload()
 
+    email = EmailSender(upload_dict)
+    email.send()
+
 elif upload == 'partial':
     # validate v4s
     validate_object = V4Checker(transform_output)
@@ -125,17 +129,3 @@ elif upload == 'partial':
 
 if clear_repo:
     ClearRepo()
-
-"""
-upload_dict = {"trade": {
-    "v4": "v4-trade.csv",
-    "edition": "time-series",
-    "collection_name": "CMD trade"
-    }
-}
-
-upload = UploadToCmd(upload_dict)
-# upload.run_partial_upload()
-upload.run_add_to_collection(ignore_upload_date=True)
-# upload.run_upload()
-"""
