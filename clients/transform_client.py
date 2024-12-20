@@ -109,6 +109,7 @@ class Transform:
             self.transform_output = transform(self.source_files)
         except Exception as e:
             print(f"Error in transform - {self.dataset}")
+            print(e)
             self._del_transform() # del scripts to avoid hangover
             raise Exception(e)
         # del scripts
@@ -218,6 +219,7 @@ class TransformLocal:
             self.transform_output = transform(self.source_files)
         except Exception as e:
             print(f"Error in transform - {self.dataset}")
+            print(e)
             self._del_transform() # del scripts to avoid hangover
             raise Exception(e)
         # del scripts
