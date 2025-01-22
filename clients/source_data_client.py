@@ -27,11 +27,11 @@ class SourceData:
         self.dataset = dataset
         self.ons_landing_page = "https://www.ons.gov.uk"
 
-        if '-previous' in dataset:
-            # for weekly-deaths-previous
-            self.is_previous = True
+        if dataset == 'weekly-deaths':
+            # weekly deaths is pulling latest and previous source files
+            self.weekly_deaths = True
         else:
-            self.is_previous = False
+            self.weekly_deaths = False
         
         # get todays date
         todays_date = datetime.datetime.now()
@@ -66,31 +66,48 @@ class SourceData:
         
         # get link
         elements = results.find_all("div", class_="inline-block--md margin-bottom-sm--1")
-        element = elements[0] # latest comes first
 
-        if self.is_previous:
-            element = elements[1] # previous edition uses second link
+        if self.weekly_deaths:
+            for i in range(2):
+                # currently downloading 2025 & 2024 
+                # increase range to add another year
+                
+                element = elements[i]
+                link = str(element).split("href=")[-1].split(">")[0].strip('"')
+                download_link = f"{self.ons_landing_page}{link}"
+                
+                # download the file
+                source_file = download_link.split('/')[-1]
+                r = requests.get(download_link, headers=self.user_agent, verify=verify)
+                with open(source_file, 'wb') as output:
+                    output.write(r.content)
+                output.close()
+                
+                print(f"written {source_file}")
+                self.downloaded_files.append(source_file)
         
-        link = str(element).split("href=")[-1].split(">")[0].strip('"')
-        download_link = f"{self.ons_landing_page}{link}"
-        
-        # download the file
-        source_file = download_link.split('/')[-1]
-        r = requests.get(download_link, headers=self.user_agent, verify=verify)
-        with open(source_file, 'wb') as output:
-            output.write(r.content)
-        print(f"written {source_file}")
-            
-        # unzip if needed
-        if source_file.endswith(".zip"):
-            with zipfile.ZipFile(source_file, 'r') as zip_ref:
-                extracted_file = zip_ref.namelist()
-                self.downloaded_files.append(extracted_file[0])
-                zip_ref.extractall("")
-            os.remove(source_file)
-            print(f"extracted {source_file}")
         else:
-            self.downloaded_files.append(source_file)
+            element = elements[0] # latest comes first
+            link = str(element).split("href=")[-1].split(">")[0].strip('"')
+            download_link = f"{self.ons_landing_page}{link}"
+            
+            # download the file
+            source_file = download_link.split('/')[-1]
+            r = requests.get(download_link, headers=self.user_agent, verify=verify)
+            with open(source_file, 'wb') as output:
+                output.write(r.content)
+            print(f"written {source_file}")
+                
+            # unzip if needed
+            if source_file.endswith(".zip"):
+                with zipfile.ZipFile(source_file, 'r') as zip_ref:
+                    extracted_file = zip_ref.namelist()
+                    self.downloaded_files.append(extracted_file[0])
+                    zip_ref.extractall("")
+                os.remove(source_file)
+                print(f"extracted {source_file}")
+            else:
+                self.downloaded_files.append(source_file)
 
     def _get_results(self, page):
         landing_page = f"{self.ons_landing_page}{page}"

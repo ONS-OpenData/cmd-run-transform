@@ -74,7 +74,7 @@ for dataset in datasets:
         
         transform_output.update(transform.transform_output)
 
-        combiner = AsheCombiner(table_number, transform_output[table_number])
+        # combiner = AsheCombiner(table_number, transform_output[table_number])
     
     else:
         if not source_files: # source files need downloading
@@ -129,3 +129,4 @@ elif upload == 'partial':
 
 if clear_repo:
     ClearRepo()
+
