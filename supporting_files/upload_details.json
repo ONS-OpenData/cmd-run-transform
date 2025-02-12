@@ -132,7 +132,7 @@
     "collection_name": "CMD weekly deaths by health board"
   },
   "weekly-deaths-age-sex": {
-    "edition": "time-series",
+    "edition": "2025",
     "collection_name": "CMD weekly deaths by age and sex"
   },
   "weekly-deaths-region": {
