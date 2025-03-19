@@ -17,7 +17,7 @@ class Base:
             self.url = "http://localhost:10800/v1"
             self.dataset_url = self.url
             
-        self.token_url = f"{self.url}/tokens"
+        self.token_url = f"{self.url}/api/v1/tokens"
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
         self.upload_url = f"{self.url}/upload"
