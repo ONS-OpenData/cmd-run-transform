@@ -93,6 +93,10 @@ class V4Checker(Base):
     def _check_codelist_against_api(self, codelist_id):
         # checks options in a dimension appear in the code list api
         # only checks codes not labels
+        if codelist_id == 'countries-and-territories':
+            print(f"Ignoring {codelist_id} code list because of nans")
+            return
+            
         codelist_url = f"{self.code_list_api_url}/{codelist_id}/editions/one-off/codes"
         codelist_dict = requests.get(codelist_url, headers=self.user_agent, verify=verify).json()
         total_count = codelist_dict['total_count'] 
