@@ -12,12 +12,13 @@ class Base:
         if operating_system == 'windows':
             self.url = 'https://publishing.dp-prod.aws.onsdigital.uk'
             self.dataset_url = f"{self.url}/dataset"
+            self.token_url = f"{self.url}/api/v1/tokens"
             
         else:
             self.url = "http://localhost:10800/v1"
             self.dataset_url = self.url
+            self.token_url = f"{self.url}/tokens"
             
-        self.token_url = f"{self.url}/api/v1/tokens"
         self.collection_url = f"{self.dataset_url}/collection"
         self.recipe_url = f"{self.url}/recipes"
         self.upload_url = f"{self.url}/upload"
@@ -120,6 +121,7 @@ class Base:
             email, password = self._get_credentials()
             login = {"email": email, "password": password}
             response_dict = self.http_request('post', self.token_url, login=login, get_access_token=True)
+
             if response_dict['status_code'] == 201:
                 response_headers = response_dict['response'].headers
                 response_content = response_dict['response'].content
