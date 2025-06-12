@@ -14,15 +14,17 @@ class Base:
             self.dataset_url = f"{self.url}/dataset"
             self.token_url = f"{self.url}/api/v1/tokens"
             self.upload_url = f"{self.url}/api/v1/upload"
+            self.recipe_url = f"{self.url}/api/v1/recipes"
             
         else:
             self.url = "http://localhost:10800/v1"
             self.dataset_url = self.url
             self.token_url = f"{self.url}/tokens"
             self.upload_url = f"{self.url}/upload"
+            self.recipe_url = f"{self.url}/recipes"
             
         self.collection_url = f"{self.dataset_url}/collection"
-        self.recipe_url = f"{self.url}/recipes"
+        
         
         # assigning variables
         self._get_access_token()
