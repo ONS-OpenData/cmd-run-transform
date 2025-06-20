@@ -11,7 +11,7 @@ class Base:
         # defining url's
         if operating_system == 'windows':
             self.url = 'https://publishing.dp-prod.aws.onsdigital.uk'
-            self.dataset_url = f"{self.url}/dataset"
+            self.dataset_url = f"{self.url}/api/v1"
             self.token_url = f"{self.url}/api/v1/tokens"
             self.upload_url = f"{self.url}/api/v1/upload"
             self.recipe_url = f"{self.url}/api/v1/recipes"
