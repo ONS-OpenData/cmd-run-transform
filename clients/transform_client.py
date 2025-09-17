@@ -2,7 +2,8 @@ import requests, os, glob, sys
 
 from get_platform import verify
 
-TRANSFORM_URL = "https://raw.github.com/ONS-OpenData/cmd-transforms/master"
+# TRANSFORM_URL = "https://raw.github.com/ONS-OpenData/cmd-transforms/master" # old url
+TRANSFORM_URL = "https://raw.githubusercontent.com/ONS-OpenData/cmd-transforms/refs/heads/master"
 
 list_of_transforms = [
     "construction", "cpih", "gdp-to-4dp", "house-prices", "index-private-housing-rental-prices", 
